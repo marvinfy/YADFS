@@ -9,20 +9,18 @@
 using std::map;
 using std::string;
 
-
 namespace yadfs
 {
 
-class File;
-class Chunk;
 
 typedef map<string, File> FileMap;
 typedef FileMap::iterator FileMapIt;
+typedef FileMap::const_iterator FileMapConstIt;
 
 class FileManager
 {
 private:
-  FileMap m_files;
+  map<string, File> m_files;
   int load();
   int persist();
 public:
@@ -36,34 +34,26 @@ public:
     persist();
   }
 
-
-  File *getFile(const string& path) const
+  File *getFile(string& path)
   {
-    m_files.find(path);
-    /*
-    FileMapIt it = 
+    FileMapIt it = m_files.find(path);
     if (it == m_files.end())
     {
       return NULL;
     }
-    return &(it->second());*/return NULL;
+    return &it->second;
   }
 
-  int addFile(const File& file)
+  int addFile(File& file)
   {
-    const string& path = file.getPath();
-    /*m_files[path] = file;*/
-
-    /*
     string *path = file.getPath();
-
     FileMapIt it = m_files.find(*path);
     if (it != m_files.end())
     {
       return -1;
     }
-*/
-    //m_files[*path] = file;
+
+    m_files[*path] = file;
     return 0;
   }
 };

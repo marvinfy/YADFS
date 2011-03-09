@@ -32,6 +32,11 @@ private:
   vector<Chunk> m_chunks;
   // int permissions, char *user, etc
 public:
+  File()
+  {
+    pthread_mutex_init(&m_mutex, NULL);
+  }
+
   File(const string& path) : m_path(path)
   {
     pthread_mutex_init(&m_mutex, NULL);
@@ -42,9 +47,9 @@ public:
     pthread_mutex_destroy(&m_mutex);
   }
 
-  const string& getPath() const
+  string *getPath()
   {
-    return m_path;
+    return &m_path;
   }
   
   int getChunkCount()
