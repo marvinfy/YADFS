@@ -5,7 +5,7 @@
  * Created on March 10, 2011, 9:47 PM
  */
 
-#include "commons.hpp"
+#include "logging.hpp"
 #include "server.hpp"
 
 #include <netinet/in.h>
@@ -30,13 +30,9 @@ yadfs::Server::~Server()
 {
 }
 
-void *lixo(void * lix)
-{
-  return NULL;
-}
-
 int yadfs::Server::start()
 {
+    opa();
   int sockfd, newsockfd, len;
   sockaddr_in srv_addr, cli_addr;
   int tries;
@@ -101,7 +97,10 @@ int yadfs::Server::stop()
 
 void *yadfs::Server::receive(void *data)
 {
-  int *sockfd = (int *)data;
-  Logging::log(Logging::INFO, "Opa! SOCKFD:%d", sockfd);
-  return NULL;
+
+}
+
+void yadfs::Server::opa()
+{
+  Logging::log(Logging::WARNING, "opa do server ");
 }

@@ -22,6 +22,10 @@ public:
     m_port = 10000;
     m_retries = 10;
   }
+
+  ServerConfig(int port, int retries) : m_port(port), m_retries(retries)
+  {
+  }
 };
 
 class Server
@@ -30,12 +34,13 @@ private:
   bool m_running;
   ServerConfig m_config;
   static void *receive(void *data);
+  static void opa();
 public:
   Server(const ServerConfig& config);
   Server(const Server& orig);
   virtual ~Server();
-  int start();
-  int stop();
+  virtual int start();
+  virtual int stop();
 };
 
 }
