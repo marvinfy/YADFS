@@ -3,10 +3,13 @@
 #include "file_manager.hpp"
 #include "../commons/server.hpp"
 
+using yadfs::ServerConfig;
+using yadfs::Server;
+
 int main(int argc, char* argv[])
 {
-  yadfs::ServerConfig config(1000, 5);
-  yadfs::Server server(config);
+  ServerConfig config(1000, 5);
+  Server server(config);
 
   server.start();
 
