@@ -6,8 +6,10 @@
                    projectFiles="true"
                    kind="SOURCE_LOGICAL_FOLDER">
       <itemPath>chunk.hpp</itemPath>
+      <itemPath>commons.hpp</itemPath>
       <itemPath>file.hpp</itemPath>
       <itemPath>file_manager.hpp</itemPath>
+      <itemPath>server.hpp</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -19,6 +21,7 @@
                    projectFiles="true"
                    kind="SOURCE_LOGICAL_FOLDER">
       <itemPath>main.cpp</itemPath>
+      <itemPath>server.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"
@@ -41,6 +44,11 @@
         <platform>2</platform>
       </toolsSet>
       <compileType>
+        <linkerTool>
+          <linkerLibItems>
+            <linkerLibLibItem>pthread</linkerLibLibItem>
+          </linkerLibItems>
+        </linkerTool>
       </compileType>
     </conf>
     <conf name="Release" type="1">

@@ -33,6 +33,7 @@ OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/server.o \
 	${OBJECTDIR}/main.o
 
 
@@ -50,7 +51,7 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=
+LDLIBSOPTIONS=-lpthread
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
@@ -59,6 +60,11 @@ LDLIBSOPTIONS=
 dist/Debug/GNU-Linux-x86/master: ${OBJECTFILES}
 	${MKDIR} -p dist/Debug/GNU-Linux-x86
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/master ${OBJECTFILES} ${LDLIBSOPTIONS} 
+
+${OBJECTDIR}/server.o: server.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/server.o server.cpp
 
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}
