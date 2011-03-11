@@ -14,14 +14,14 @@ GREP=grep
 NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc
-CCC=g++
-CXX=g++
+CC=gcc.exe
+CCC=g++.exe
+CXX=g++.exe
 FC=
-AS=as
+AS=as.exe
 
 # Macros
-CND_PLATFORM=GNU-Linux-x86
+CND_PLATFORM=Cygwin-Windows
 CND_CONF=Debug
 CND_DISTDIR=dist
 
@@ -54,12 +54,12 @@ LDLIBSOPTIONS=-lpthread ../commons/dist/Debug/GNU-Linux-x86/libcommons.a
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-Debug.mk dist/Debug/GNU-Linux-x86/master
+	"${MAKE}"  -f nbproject/Makefile-Debug.mk dist/Debug/Cygwin-Windows/master.exe
 
-dist/Debug/GNU-Linux-x86/master: ../commons/dist/Debug/GNU-Linux-x86/libcommons.a
+dist/Debug/Cygwin-Windows/master.exe: ../commons/dist/Debug/GNU-Linux-x86/libcommons.a
 
-dist/Debug/GNU-Linux-x86/master: ${OBJECTFILES}
-	${MKDIR} -p dist/Debug/GNU-Linux-x86
+dist/Debug/Cygwin-Windows/master.exe: ${OBJECTFILES}
+	${MKDIR} -p dist/Debug/Cygwin-Windows
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/master ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/main.o: main.cpp 
@@ -74,7 +74,7 @@ ${OBJECTDIR}/main.o: main.cpp
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r build/Debug
-	${RM} dist/Debug/GNU-Linux-x86/master
+	${RM} dist/Debug/Cygwin-Windows/master.exe
 
 # Subprojects
 .clean-subprojects:
