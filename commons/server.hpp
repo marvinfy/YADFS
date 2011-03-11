@@ -34,7 +34,6 @@ private:
   bool m_running;
   ServerConfig m_config;
   static void *receive(void *data);
-  static void opa();
 public:
   Server(const ServerConfig& config);
   Server(const Server& orig);

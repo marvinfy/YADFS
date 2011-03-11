@@ -32,7 +32,6 @@ yadfs::Server::~Server()
 
 int yadfs::Server::start()
 {
-    opa();
   int sockfd, newsockfd, len;
   sockaddr_in srv_addr, cli_addr;
   int tries;
@@ -98,9 +97,4 @@ int yadfs::Server::stop()
 void *yadfs::Server::receive(void *data)
 {
 
-}
-
-void yadfs::Server::opa()
-{
-  Logging::log(Logging::WARNING, "opa do server ");
 }
