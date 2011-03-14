@@ -16,7 +16,6 @@
 #include <unistd.h>
 
 using yadfs::Logging;
-using yadfs::Logging;
 
 yadfs::Server::Server(const ServerConfig& config) : m_running(false), m_config(config)
 {
@@ -82,7 +81,7 @@ int yadfs::Server::start()
       continue;
     }
     
-    pthread_create(&thread, NULL, yadfs::Server::receive, (void *)&newsockfd);
+    pthread_create(&thread, NULL, receive, (void *)&newsockfd);
   }
 
   return 0;
@@ -92,9 +91,4 @@ int yadfs::Server::stop()
 {
   m_running = false;
   return 0;
-}
-
-void *yadfs::Server::receive(void *data)
-{
-
 }

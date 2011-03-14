@@ -5,6 +5,7 @@
                    displayName="Header Files"
                    projectFiles="true"
                    kind="SOURCE_LOGICAL_FOLDER">
+      <itemPath>client.hpp</itemPath>
       <itemPath>logging.hpp</itemPath>
       <itemPath>server.hpp</itemPath>
     </logicalFolder>
@@ -17,6 +18,7 @@
                    displayName="Source Files"
                    projectFiles="true"
                    kind="SOURCE_LOGICAL_FOLDER">
+      <itemPath>client.cpp</itemPath>
       <itemPath>logging.cpp</itemPath>
       <itemPath>server.cpp</itemPath>
     </logicalFolder>
@@ -37,8 +39,8 @@
     <conf name="Debug" type="3">
       <toolsSet>
         <developmentServer>localhost</developmentServer>
-        <compilerSet>GNU|GNU</compilerSet>
-        <platform>2</platform>
+        <compilerSet>Cygwin|Cygwin</compilerSet>
+        <platform>3</platform>
       </toolsSet>
       <compileType>
         <archiverTool>

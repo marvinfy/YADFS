@@ -8,6 +8,8 @@
 #ifndef SERVER_HPP
 #define	SERVER_HPP
 
+void *receive(void *data);
+
 namespace yadfs
 {
 
@@ -33,7 +35,6 @@ class Server
 private:
   bool m_running;
   ServerConfig m_config;
-  static void *receive(void *data);
 public:
   Server(const ServerConfig& config);
   Server(const Server& orig);
@@ -43,5 +44,5 @@ public:
 };
 
 }
-#endif	/* SERVER_HPP */
 
+#endif	/* SERVER_HPP */

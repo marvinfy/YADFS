@@ -8,13 +8,15 @@
             <c-extensions/>
             <cpp-extensions>cpp</cpp-extensions>
             <header-extensions/>
-            <make-dep-projects/>
+            <sourceEncoding>UTF-8</sourceEncoding>
+            <make-dep-projects>
+                <make-dep-project>../commons</make-dep-project>
+            </make-dep-projects>
             <sourceRootList/>
             <confList>
                 <confElem>Debug</confElem>
                 <confElem>Release</confElem>
             </confList>
-            <sourceEncoding>UTF-8</sourceEncoding>
         </data>
     </configuration>
 </project>

@@ -14,24 +14,16 @@ using std::string;
 namespace yadfs
 {
 
-
-enum OpenMode
-{
-  RO,
-  RW
-};
-
-class Chunk;
 class File
 {
+
 private:
   pthread_mutex_t m_mutex;
-  OpenMode m_mode;
-
   string m_path;
   vector<Chunk> m_chunks;
   // int permissions, char *user, etc
 public:
+
   File()
   {
     pthread_mutex_init(&m_mutex, NULL);

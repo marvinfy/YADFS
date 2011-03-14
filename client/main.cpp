@@ -1,19 +1,17 @@
-/* 
- * File:   main.cpp
- * Author: marcusviniciusns
- *
- * Created on March 8, 2011, 10:10 PM
- */
+#include <iostream>
 
-#include <cstdlib>
+#include "../commons/client.hpp"
 
-using namespace std;
+using yadfs::ClientConfig;
+using yadfs::Client;
 
-/*
- * 
- */
-int main(int argc, char** argv) {
+int main(int argc, char* argv[])
+{
+  ClientConfig config("localhost", 1000);
+  Client client(config);
 
-    return 0;
+  client.connect_();
+  client.write_((void *)"oi!", 4);
+  client.close_();
+  return 0;
 }
-
