@@ -8,6 +8,7 @@
       <itemPath>chunk.hpp</itemPath>
       <itemPath>file.hpp</itemPath>
       <itemPath>file_manager.hpp</itemPath>
+      <itemPath>master_server.hpp</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -19,6 +20,7 @@
                    projectFiles="true"
                    kind="SOURCE_LOGICAL_FOLDER">
       <itemPath>main.cpp</itemPath>
+      <itemPath>master_server.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"
@@ -43,7 +45,7 @@
       <compileType>
         <linkerTool>
           <linkerLibItems>
-            <linkerLibLibItem>pthread</linkerLibLibItem>
+            <linkerLibStdlibItem>PosixThreads</linkerLibStdlibItem>
             <linkerLibProjectItem>
               <makeArtifact PL="../commons"
                             CT="3"
@@ -53,7 +55,7 @@
                             WD="../commons"
                             BC="${MAKE}  -f Makefile CONF=Debug"
                             CC="${MAKE}  -f Makefile CONF=Debug clean"
-                            OP="dist/Debug/GNU-Linux-x86/libcommons.a">
+                            OP="dist/Debug/Cygwin-Windows/libcommons.a">
               </makeArtifact>
             </linkerLibProjectItem>
           </linkerLibItems>

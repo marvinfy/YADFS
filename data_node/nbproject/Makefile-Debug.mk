@@ -14,14 +14,14 @@ GREP=grep
 NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc
-CCC=g++
-CXX=g++
+CC=gcc.exe
+CCC=g++.exe
+CXX=g++.exe
 FC=
-AS=as
+AS=as.exe
 
 # Macros
-CND_PLATFORM=GNU-Linux-x86
+CND_PLATFORM=Cygwin-Windows
 CND_CONF=Debug
 CND_DISTDIR=dist
 
@@ -54,10 +54,10 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-Debug.mk dist/Debug/GNU-Linux-x86/data_node
+	"${MAKE}"  -f nbproject/Makefile-Debug.mk dist/Debug/Cygwin-Windows/data_node.exe
 
-dist/Debug/GNU-Linux-x86/data_node: ${OBJECTFILES}
-	${MKDIR} -p dist/Debug/GNU-Linux-x86
+dist/Debug/Cygwin-Windows/data_node.exe: ${OBJECTFILES}
+	${MKDIR} -p dist/Debug/Cygwin-Windows
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/data_node ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/main.o: main.cpp 
@@ -71,7 +71,7 @@ ${OBJECTDIR}/main.o: main.cpp
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r build/Debug
-	${RM} dist/Debug/GNU-Linux-x86/data_node
+	${RM} dist/Debug/Cygwin-Windows/data_node.exe
 
 # Subprojects
 .clean-subprojects:

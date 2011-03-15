@@ -8,8 +8,6 @@
 #ifndef SERVER_HPP
 #define	SERVER_HPP
 
-void *receive(void *data);
-
 namespace yadfs
 {
 
@@ -18,14 +16,16 @@ class ServerConfig
 public:
   int m_port;
   unsigned int m_retries;
-
+  char *m_user;
+  char *m_pass;
+  
   ServerConfig()
   {
     m_port = 10000;
     m_retries = 10;
   }
 
-  ServerConfig(int port, int retries) : m_port(port), m_retries(retries)
+  ServerConfig(int port, int retries) : m_port(port), m_retries(retries), m_user("root"), m_pass("manager")
   {
   }
 };
@@ -34,13 +34,19 @@ class Server
 {
 private:
   bool m_running;
+  static void *Receive(void *data);
+  int m_sockfd;
+protected:
   ServerConfig m_config;
 public:
   Server(const ServerConfig& config);
   Server(const Server& orig);
   virtual ~Server();
-  virtual int start();
-  virtual int stop();
+  int Start();
+  int Stop();
+  int Read(void *data, int len);
+  int Write(void *data, int len);
+  virtual void *Receive();
 };
 
 }

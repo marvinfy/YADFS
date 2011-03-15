@@ -22,7 +22,7 @@ yadfs::Client::~Client()
 {
 }
 
-int yadfs::Client::connect_()
+int yadfs::Client::Connect()
 {
   hostent *server;
   sockaddr_in srv_addr;
@@ -59,7 +59,7 @@ int yadfs::Client::connect_()
   return m_sockfd;
 }
 
-int yadfs::Client::write_(void *data, int len)
+int yadfs::Client::Write(void *data, int len)
 {
   if (m_sockfd < 0)
   {
@@ -68,7 +68,7 @@ int yadfs::Client::write_(void *data, int len)
   return write(m_sockfd, data, len);
 }
 
-int yadfs::Client::read_(void *data, int len)
+int yadfs::Client::Read(void *data, int len)
 {
   if (m_sockfd < 0)
   {
@@ -77,7 +77,7 @@ int yadfs::Client::read_(void *data, int len)
   return read(m_sockfd, data, len);
 }
 
-void yadfs::Client::close_()
+void yadfs::Client::Close()
 {
   if (m_sockfd < 0)
   {

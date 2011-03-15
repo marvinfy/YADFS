@@ -17,7 +17,13 @@
 
 using yadfs::Logging;
 
-yadfs::Server::Server(const ServerConfig& config) : m_running(false), m_config(config)
+void *yadfs::Server::Receive(void *data)
+{
+  Server *server = (Server *)data;
+  return server->Receive();
+}
+
+yadfs::Server::Server(const ServerConfig& config) : m_running(false), m_sockfd(-1), m_config(config)
 {
 }
 
@@ -29,9 +35,9 @@ yadfs::Server::~Server()
 {
 }
 
-int yadfs::Server::start()
+int yadfs::Server::Start()
 {
-  int sockfd, newsockfd, len;
+  int sockfd, len;
   sockaddr_in srv_addr, cli_addr;
   int tries;
   pthread_t thread;
@@ -73,22 +79,38 @@ int yadfs::Server::start()
   len = sizeof(cli_addr);
   
   while (m_running)
-  {
-    newsockfd = accept(sockfd, (sockaddr *) &cli_addr, (socklen_t *) &len);
-    if(newsockfd < 0)
+  {//ta errado.. nao pode ser membro..
+    // nao sai do while.. pq ta em accept
+    m_sockfd = accept(sockfd, (sockaddr *) &cli_addr, (socklen_t *) &len);
+    if(m_sockfd < 0)
     {
       Logging::log(Logging::ERROR, "Accept error.");
       continue;
     }
-    
-    pthread_create(&thread, NULL, receive, (void *)&newsockfd);
+    pthread_create(&thread, NULL, yadfs::Server::Receive, (void *)this);
   }
 
   return 0;
 }
 
-int yadfs::Server::stop()
+int yadfs::Server::Stop()
 {
+  //close()
   m_running = false;
   return 0;
+}
+
+void *yadfs::Server::Receive()
+{
+  return 0;
+}
+
+int yadfs::Server::Read(void *data, int len)
+{
+  return read(m_sockfd, data, len);
+}
+
+int yadfs::Server::Write(void *data, int len)
+{
+  return write(m_sockfd, data, len);
 }

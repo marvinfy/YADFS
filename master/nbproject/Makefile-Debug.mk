@@ -33,6 +33,7 @@ OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/master_server.o \
 	${OBJECTDIR}/main.o
 
 
@@ -50,17 +51,22 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=-lpthread ../commons/dist/Debug/GNU-Linux-x86/libcommons.a
+LDLIBSOPTIONS=-lpthread ../commons/dist/Debug/Cygwin-Windows/libcommons.a
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
 	"${MAKE}"  -f nbproject/Makefile-Debug.mk dist/Debug/Cygwin-Windows/master.exe
 
-dist/Debug/Cygwin-Windows/master.exe: ../commons/dist/Debug/GNU-Linux-x86/libcommons.a
+dist/Debug/Cygwin-Windows/master.exe: ../commons/dist/Debug/Cygwin-Windows/libcommons.a
 
 dist/Debug/Cygwin-Windows/master.exe: ${OBJECTFILES}
 	${MKDIR} -p dist/Debug/Cygwin-Windows
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/master ${OBJECTFILES} ${LDLIBSOPTIONS} 
+
+${OBJECTDIR}/master_server.o: master_server.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/master_server.o master_server.cpp
 
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}

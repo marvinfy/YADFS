@@ -41,10 +41,10 @@ public:
   Client(const Client& orig);
   virtual ~Client();
 
-  int connect_();
-  int write_(void *data, int len);
-  int read_(void *data, int len);
-  void close_();
+  int Connect();
+  int Write(void *data, int len);
+  int Read(void *data, int len);
+  void Close();
 };
 
 }
