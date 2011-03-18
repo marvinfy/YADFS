@@ -1,17 +1,8 @@
-#include <iostream>
+/*
 
-#include "../commons/client.hpp"
-#include "../commons/messages.hpp"
-#include <iostream>
-#include <string.h>
-#include <stdio.h>
-
-
-using yadfs::ClientConfig;
-using yadfs::Client;
-
-int main(int argc, char* argv[])
+static void dummy()
 {
+
   ClientConfig config("localhost", 10000);
   Client client(config);
   msg_req_handshake msg_hs;
@@ -23,7 +14,7 @@ int main(int argc, char* argv[])
   msg_echo.m_len = 13;
   client.Connect();
   client.Write(&msg_hs, sizeof(msg_hs));
-  client.Write(&msg_echo, sizeof(msg_echo)); 
+  client.Write(&msg_echo, sizeof(msg_echo));
   client.Write((void *)"Ola, Mundo!\n", 13);
   client.Close();
 
@@ -56,6 +47,5 @@ int main(int argc, char* argv[])
     printf("Server NAO vai desligar!\n");
   }
   
-  
-  return 0;
 }
+*/

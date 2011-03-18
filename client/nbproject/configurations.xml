@@ -15,7 +15,8 @@
                    displayName="Source Files"
                    projectFiles="true"
                    kind="SOURCE_LOGICAL_FOLDER">
-      <itemPath>main.cpp</itemPath>
+      <itemPath>main.c</itemPath>
+      <itemPath>opa.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"
@@ -38,7 +39,18 @@
         <platform>2</platform>
       </toolsSet>
       <compileType>
+        <cTool>
+          <incDir>
+            <pElem>/usr/include/fuse</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>_FILE_OFFSET_BITS=64</Elem>
+          </preprocessorList>
+        </cTool>
         <linkerTool>
+          <linkerAddLib>
+            <pElem>/usr/local/lib</pElem>
+          </linkerAddLib>
           <linkerLibItems>
             <linkerLibProjectItem>
               <makeArtifact PL="../commons"
@@ -52,6 +64,7 @@
                             OP="dist/Debug/GNU-Linux-x86/libcommons.a">
               </makeArtifact>
             </linkerLibProjectItem>
+            <linkerLibLibItem>fuse</linkerLibLibItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>

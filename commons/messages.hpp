@@ -32,8 +32,11 @@ typedef struct _msg_req_shutdown {
   time_t m_timeout;
 } msg_req_shutdown;
 
+
+typedef char boolean;
+
 typedef struct _msg_res_shutdown {
-  bool m_ok;
+  boolean m_ok;
 } msg_res_shutdown;
 
 #endif	/* MESSAGES_HPP */
