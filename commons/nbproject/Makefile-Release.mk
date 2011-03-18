@@ -34,6 +34,7 @@ OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/server.o \
+	${OBJECTDIR}/client.o \
 	${OBJECTDIR}/logging.o
 
 
@@ -65,6 +66,11 @@ ${OBJECTDIR}/server.o: server.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/server.o server.cpp
+
+${OBJECTDIR}/client.o: client.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/client.o client.cpp
 
 ${OBJECTDIR}/logging.o: logging.cpp 
 	${MKDIR} -p ${OBJECTDIR}

@@ -20,7 +20,7 @@ public:
   MasterServer(const ServerConfig& config);
   MasterServer(const MasterServer& orig);
   virtual ~MasterServer();
-  void *Receive();
+  void *Receive(int sockfd);
 };
 
 }

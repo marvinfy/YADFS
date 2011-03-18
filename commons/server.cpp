@@ -17,10 +17,18 @@
 
 using yadfs::Logging;
 
+typedef struct _receive_data {
+  yadfs::Server *m_server;
+  int m_sockfd;
+} receive_data;
+
 void *yadfs::Server::Receive(void *data)
 {
-  Server *server = (Server *)data;
-  return server->Receive();
+  receive_data *rd = (receive_data *)data;
+  void *ret = rd->m_server->Receive(rd->m_sockfd);
+  delete rd;
+  
+  return ret;
 }
 
 yadfs::Server::Server(const ServerConfig& config) : m_running(false), m_sockfd(-1), m_config(config)
@@ -41,9 +49,9 @@ int yadfs::Server::Start()
   sockaddr_in srv_addr, cli_addr;
   int tries;
   pthread_t thread;
-  
-  sockfd = socket(AF_INET, SOCK_STREAM, 0);
-  if (sockfd < 0)
+
+  m_sockfd = socket(AF_INET, SOCK_STREAM, 0);
+  if (m_sockfd < 0)
   {
     Logging::log(Logging::ERROR, "Cannot open stream socket.");
     return -1;
@@ -56,7 +64,7 @@ int yadfs::Server::Start()
 
   for (tries = 1;;)
   {
-    if(bind(sockfd, (sockaddr *)&srv_addr, sizeof(srv_addr)) == 0)
+    if(bind(m_sockfd, (sockaddr *)&srv_addr, sizeof(srv_addr)) == 0)
     {
       break;
     }
@@ -65,7 +73,7 @@ int yadfs::Server::Start()
     
     if (tries++ >= m_config.m_retries)
     {
-      close(sockfd);
+      close(m_sockfd);
       return -1;
     }
 
@@ -75,19 +83,22 @@ int yadfs::Server::Start()
   Logging::log(Logging::INFO, "Server started");
   m_running = true;
 
-  listen(sockfd, 5);
+  listen(m_sockfd, 5);
   len = sizeof(cli_addr);
   
   while (m_running)
-  {//ta errado.. nao pode ser membro..
-    // nao sai do while.. pq ta em accept
-    m_sockfd = accept(sockfd, (sockaddr *) &cli_addr, (socklen_t *) &len);
-    if(m_sockfd < 0)
+  {
+    int sockfd = accept(m_sockfd, (sockaddr *) &cli_addr, (socklen_t *) &len);
+    if(sockfd < 0)
     {
       Logging::log(Logging::ERROR, "Accept error.");
       continue;
     }
-    pthread_create(&thread, NULL, yadfs::Server::Receive, (void *)this);
+
+    receive_data *rd = new receive_data;
+    rd->m_server = this;
+    rd->m_sockfd = sockfd;
+    pthread_create(&thread, NULL, yadfs::Server::Receive, (void *)rd);
   }
 
   return 0;
@@ -95,22 +106,13 @@ int yadfs::Server::Start()
 
 int yadfs::Server::Stop()
 {
-  //close()
   m_running = false;
+  close(m_sockfd);
   return 0;
 }
 
-void *yadfs::Server::Receive()
+void *yadfs::Server::Receive(int sockfd)
 {
   return 0;
 }
 
-int yadfs::Server::Read(void *data, int len)
-{
-  return read(m_sockfd, data, len);
-}
-
-int yadfs::Server::Write(void *data, int len)
-{
-  return write(m_sockfd, data, len);
-}

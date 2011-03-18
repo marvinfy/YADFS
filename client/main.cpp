@@ -2,19 +2,22 @@
 
 #include "../commons/client.hpp"
 #include "../commons/messages.hpp"
+#include <iostream>
+#include <string.h>
+#include <stdio.h>
+
 
 using yadfs::ClientConfig;
 using yadfs::Client;
 
 int main(int argc, char* argv[])
 {
-  ClientConfig config("localhost", 1000);
+  ClientConfig config("localhost", 10000);
   Client client(config);
   msg_req_handshake msg_hs;
   msg_req_echo msg_echo;
   msg_req_shutdown msg_req_sd;
   msg_res_shutdown msg_res_sd;
-
 
   msg_hs.m_msg_id = MSG_REQ_ECHO;
   msg_echo.m_len = 13;
@@ -31,7 +34,6 @@ int main(int argc, char* argv[])
   client.Write(&msg_echo, sizeof(msg_echo));
   client.Write((void *)"Tudo bem?\n", 11);
   client.Close();
-
 
   msg_hs.m_msg_id = MSG_REQ_SHUTDOWN;
   memset(&msg_req_sd, 0, sizeof(msg_req_sd));

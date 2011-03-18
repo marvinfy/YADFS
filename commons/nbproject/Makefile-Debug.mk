@@ -14,14 +14,14 @@ GREP=grep
 NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc.exe
-CCC=g++.exe
-CXX=g++.exe
+CC=gcc
+CCC=g++
+CXX=g++
 FC=
-AS=as.exe
+AS=as
 
 # Macros
-CND_PLATFORM=Cygwin-Windows
+CND_PLATFORM=GNU-Linux-x86
 CND_CONF=Debug
 CND_DISTDIR=dist
 
@@ -56,13 +56,13 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-Debug.mk dist/Debug/Cygwin-Windows/libcommons.a
+	"${MAKE}"  -f nbproject/Makefile-Debug.mk dist/Debug/GNU-Linux-x86/libcommons.a
 
-dist/Debug/Cygwin-Windows/libcommons.a: ${OBJECTFILES}
-	${MKDIR} -p dist/Debug/Cygwin-Windows
-	${RM} dist/Debug/Cygwin-Windows/libcommons.a
+dist/Debug/GNU-Linux-x86/libcommons.a: ${OBJECTFILES}
+	${MKDIR} -p dist/Debug/GNU-Linux-x86
+	${RM} dist/Debug/GNU-Linux-x86/libcommons.a
 	${AR} -rv ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libcommons.a ${OBJECTFILES} 
-	$(RANLIB) dist/Debug/Cygwin-Windows/libcommons.a
+	$(RANLIB) dist/Debug/GNU-Linux-x86/libcommons.a
 
 ${OBJECTDIR}/server.o: server.cpp 
 	${MKDIR} -p ${OBJECTDIR}
@@ -85,7 +85,7 @@ ${OBJECTDIR}/logging.o: logging.cpp
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r build/Debug
-	${RM} dist/Debug/Cygwin-Windows/libcommons.a
+	${RM} dist/Debug/GNU-Linux-x86/libcommons.a
 
 # Subprojects
 .clean-subprojects:

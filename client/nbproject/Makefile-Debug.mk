@@ -14,14 +14,14 @@ GREP=grep
 NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc.exe
-CCC=g++.exe
-CXX=g++.exe
+CC=gcc
+CCC=g++
+CXX=g++
 FC=
-AS=as.exe
+AS=as
 
 # Macros
-CND_PLATFORM=Cygwin-Windows
+CND_PLATFORM=GNU-Linux-x86
 CND_CONF=Debug
 CND_DISTDIR=dist
 
@@ -50,16 +50,16 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=../commons/dist/Debug/Cygwin-Windows/libcommons.a
+LDLIBSOPTIONS=../commons/dist/Debug/GNU-Linux-x86/libcommons.a
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-Debug.mk dist/Debug/Cygwin-Windows/client.exe
+	"${MAKE}"  -f nbproject/Makefile-Debug.mk dist/Debug/GNU-Linux-x86/client
 
-dist/Debug/Cygwin-Windows/client.exe: ../commons/dist/Debug/Cygwin-Windows/libcommons.a
+dist/Debug/GNU-Linux-x86/client: ../commons/dist/Debug/GNU-Linux-x86/libcommons.a
 
-dist/Debug/Cygwin-Windows/client.exe: ${OBJECTFILES}
-	${MKDIR} -p dist/Debug/Cygwin-Windows
+dist/Debug/GNU-Linux-x86/client: ${OBJECTFILES}
+	${MKDIR} -p dist/Debug/GNU-Linux-x86
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/client ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/main.o: main.cpp 
@@ -74,7 +74,7 @@ ${OBJECTDIR}/main.o: main.cpp
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r build/Debug
-	${RM} dist/Debug/Cygwin-Windows/client.exe
+	${RM} dist/Debug/GNU-Linux-x86/client
 
 # Subprojects
 .clean-subprojects:

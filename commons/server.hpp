@@ -34,8 +34,8 @@ class Server
 {
 private:
   bool m_running;
-  static void *Receive(void *data);
   int m_sockfd;
+  static void *Receive(void *data);
 protected:
   ServerConfig m_config;
 public:
@@ -44,9 +44,7 @@ public:
   virtual ~Server();
   int Start();
   int Stop();
-  int Read(void *data, int len);
-  int Write(void *data, int len);
-  virtual void *Receive();
+  virtual void *Receive(int sockfd);
 };
 
 }
