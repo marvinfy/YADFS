@@ -27,14 +27,19 @@
 
 static const char* temp = "/home/marcusviniciusns/temp";
 
+static void new_path(char *path_new, char *path)
+{
+  memset(path_new, 0, 255);
+  memcpy(path_new, temp, strlen(temp));
+  memcpy(&(path_new[strlen(temp)]), path, strlen(path));
+}
+
 static int yadfs_getattr(const char *path, struct stat *stbuf)
 {
   int res;
 
   char path_new[255];
-  memset(path_new, 0, 255);
-  memcpy(path_new, temp, strlen(temp));
-  memcpy(&(path_new[strlen(temp)]), path, strlen(path));
+  new_path(path_new, path);
 
   res = lstat(path_new, stbuf);
 
@@ -57,9 +62,7 @@ static int yadfs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
   (void) fi;
 
   char path_new[255];
-  memset(path_new, 0, 255);
-  memcpy(path_new, temp, strlen(temp));
-  memcpy(&(path_new[strlen(temp)]), path, strlen(path));
+  new_path(path_new, path);
 
   dp = opendir(path_new);
 
