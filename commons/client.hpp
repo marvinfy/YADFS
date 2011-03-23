@@ -42,8 +42,8 @@ public:
   virtual ~Client();
 
   int Connect();
-  int Write(void *data, int len);
-  int Read(void *data, int len);
+  bool Write(void *data, int len);
+  bool Read(void *data, int len);
   void Close();
 };
 

@@ -45,6 +45,8 @@ public:
   int Start();
   int Stop();
   virtual void *Receive(int sockfd);
+  static bool Read(int sockfd, void *data, int len);
+  static bool Write(int sockfd, void *data, int len);
 };
 
 }

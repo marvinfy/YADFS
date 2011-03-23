@@ -62,22 +62,34 @@ int yadfs::Client::Connect()
   return m_sockfd;
 }
 
-int yadfs::Client::Write(void *data, int len)
+bool yadfs::Client::Write(void *data, int len)
 {
   if (m_sockfd < 0)
   {
-    return -1;
+    return false;
   }
-  return write(m_sockfd, data, len);
+  
+  if (write(m_sockfd, data, len) == len)
+  {
+    return true;
+  }
+  
+  return false;
 }
 
-int yadfs::Client::Read(void *data, int len)
+bool yadfs::Client::Read(void *data, int len)
 {
   if (m_sockfd < 0)
   {
-    return -1;
+    return false;
   }
-  return read(m_sockfd, data, len);
+
+  if (read(m_sockfd, data, len) == len)
+  {
+    return true;
+  }
+
+  return false;
 }
 
 void yadfs::Client::Close()

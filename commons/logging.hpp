@@ -8,6 +8,12 @@
 #ifndef LOGGING_HPP
 #define	LOGGING_HPP
 
+
+#ifdef	__cplusplus
+extern "C"
+{
+#endif
+
 namespace yadfs
 {
 
@@ -19,5 +25,13 @@ public:
 };
 
 }
+
+#ifdef	__cplusplus
+}
+#endif
+
+
+
+
 
 #endif	/* LOGGING_HPP */

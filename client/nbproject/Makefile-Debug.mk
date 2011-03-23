@@ -34,7 +34,8 @@ OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/opa.o \
-	${OBJECTDIR}/main.o
+	${OBJECTDIR}/main.o \
+	${OBJECTDIR}/yadfs_client.o
 
 
 # C Compiler Flags
@@ -66,12 +67,17 @@ dist/Debug/GNU-Linux-x86/client: ${OBJECTFILES}
 ${OBJECTDIR}/opa.o: opa.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/opa.o opa.cpp
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/opa.o opa.cpp
 
 ${OBJECTDIR}/main.o: main.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -g -D_FILE_OFFSET_BITS=64 -I/usr/include/fuse -MMD -MP -MF $@.d -o ${OBJECTDIR}/main.o main.c
+	$(COMPILE.c) -g -D_FILE_OFFSET_BITS=64 -D_GNU_SOURCE -I/usr/include/fuse -MMD -MP -MF $@.d -o ${OBJECTDIR}/main.o main.c
+
+${OBJECTDIR}/yadfs_client.o: yadfs_client.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/yadfs_client.o yadfs_client.cpp
 
 # Subprojects
 .build-subprojects:

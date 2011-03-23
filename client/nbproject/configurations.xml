@@ -5,6 +5,8 @@
                    displayName="Header Files"
                    projectFiles="true"
                    kind="SOURCE_LOGICAL_FOLDER">
+      <itemPath>fuse.h</itemPath>
+      <itemPath>yadfs_client.hpp</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -17,6 +19,7 @@
                    kind="SOURCE_LOGICAL_FOLDER">
       <itemPath>main.c</itemPath>
       <itemPath>opa.cpp</itemPath>
+      <itemPath>yadfs_client.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"
@@ -45,8 +48,14 @@
           </incDir>
           <preprocessorList>
             <Elem>_FILE_OFFSET_BITS=64</Elem>
+            <Elem>_GNU_SOURCE</Elem>
           </preprocessorList>
         </cTool>
+        <ccTool>
+          <preprocessorList>
+            <Elem>_FILE_OFFSET_BITS=64</Elem>
+          </preprocessorList>
+        </ccTool>
         <linkerTool>
           <linkerAddLib>
             <pElem>/usr/local/lib</pElem>

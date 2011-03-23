@@ -116,3 +116,51 @@ void *yadfs::Server::Receive(int sockfd)
   return 0;
 }
 
+bool yadfs::Server::Read(int sockfd, void* data, int len)
+{
+  if (sockfd < 0)
+  {
+    Logging::log(Logging::ERROR, "Can not read from socket (fd=%d)", sockfd);
+    return false;
+  }
+
+  int _read = read(sockfd, data, len);
+  if (_read == len)
+  {
+    return true;
+  }
+
+  if (_read == 0)
+  {
+    Logging::log(Logging::ERROR, "EOF caught while receiving packet.");
+    return false;
+  }
+
+  if (_read == -1)
+  {
+    Logging::log(Logging::ERROR, "Error while receiving packet.");
+    return false;
+  }
+
+  Logging::log(Logging::ERROR, "Unknown error while receiving packet.");
+  return false;
+}
+
+bool yadfs::Server::Write(int sockfd, void* data, int len)
+{
+  if (sockfd < 0)
+  {
+    Logging::log(Logging::ERROR, "Can not write to socket (fd=%d).", sockfd);
+    return false;
+  }
+
+  if (write(sockfd, data, len) == len)
+  {
+    return true;
+  }
+
+  Logging::log(Logging::ERROR, "Error sending packet.");
+  return false;
+}
+
+
