@@ -138,11 +138,12 @@ bool yadfs::Server::Read(int sockfd, void* data, int len)
 
   if (_read == -1)
   {
-    Logging::log(Logging::ERROR, "Error while receiving packet.");
+    Logging::log(Logging::ERROR, "Unknown error while receiving packet.");
     return false;
   }
 
-  Logging::log(Logging::ERROR, "Unknown error while receiving packet.");
+  Logging::log(Logging::ERROR, "Invalid packet size. Expected %d. Read %d.",
+               len, _read);
   return false;
 }
 
@@ -159,7 +160,7 @@ bool yadfs::Server::Write(int sockfd, void* data, int len)
     return true;
   }
 
-  Logging::log(Logging::ERROR, "Error sending packet.");
+  Logging::log(Logging::ERROR, "Failed to send packet.");
   return false;
 }
 

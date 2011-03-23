@@ -66,14 +66,16 @@ bool yadfs::Client::Write(void *data, int len)
 {
   if (m_sockfd < 0)
   {
+    Logging::log(Logging::ERROR, "Can not write to socket (fd=%d).", m_sockfd);
     return false;
   }
-  
+
   if (write(m_sockfd, data, len) == len)
   {
     return true;
   }
-  
+
+  Logging::log(Logging::ERROR, "Failed to send packet.");
   return false;
 }
 
@@ -81,14 +83,30 @@ bool yadfs::Client::Read(void *data, int len)
 {
   if (m_sockfd < 0)
   {
+    Logging::log(Logging::ERROR, "Can not read from socket (fd=%d)", m_sockfd);
     return false;
   }
 
-  if (read(m_sockfd, data, len) == len)
+  int _read = read(m_sockfd, data, len);
+  if (_read == len)
   {
     return true;
   }
 
+  if (_read == 0)
+  {
+    Logging::log(Logging::ERROR, "EOF caught while receiving packet.");
+    return false;
+  }
+
+  if (_read == -1)
+  {
+    Logging::log(Logging::ERROR, "Unknown error while receiving packet.");
+    return false;
+  }
+
+  Logging::log(Logging::ERROR, "Invalid packet size. Expected %d. Read %d.",
+               len, _read);
   return false;
 }
 

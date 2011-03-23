@@ -26,28 +26,27 @@ int yadfs_client_init(char *host, int port)
 
 int yadfs_getattr_real(const char *path, struct stat *stbuf)
 {
-  msg_req_handshake req_handshake;
-  msg_req_getattr req_getattr;
-  msg_res_getattr res_getattr;
-
   if (client->Connect() < 0)
   {
     return -ENOTCONN; // -ECONNREFUSED;
   }
 
+  msg_req_handshake req_handshake;
   req_handshake.m_msg_id = MSG_REQ_GETATTR;
-  if (!client->Write(&req_handshake, sizeof(req_handshake)))
+  if (!client->Write(&req_handshake, sizeof(msg_req_handshake)))
   {
-    return -EPROTO; // EILSEQ, EPROTO
+    return -EPROTO; // -EILSEQ, -EPROTO
   }
 
+  msg_req_getattr req_getattr;
   strcpy(req_getattr.m_path, path);
-  if (!client->Write(&req_getattr, sizeof(req_getattr)))
+  if (!client->Write(&req_getattr, sizeof(msg_req_getattr)))
   {
     return -EPROTO;
   }
 
-  if (!client->Read(&res_getattr, sizeof(res_getattr)))
+  msg_res_getattr res_getattr;
+  if (!client->Read(&res_getattr, sizeof(msg_res_getattr)))
   {
     return -EPROTO;
   }

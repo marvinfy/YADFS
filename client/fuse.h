@@ -8,6 +8,10 @@
 #ifndef FUSE_H
 #define	FUSE_H
 
+#ifdef FUSE_USE_VERSION
+#undef FUSE_USE_VERSION
+#endif
+
 #define FUSE_USE_VERSION 26
 
 #ifdef linux
