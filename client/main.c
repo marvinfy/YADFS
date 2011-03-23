@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
   {
     return ret;
   }
-
+  //sleep(15);
   ret = fuse_main(argc, argv, &yadfs_operations, NULL);
   
   return ret;

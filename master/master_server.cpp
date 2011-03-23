@@ -105,7 +105,10 @@ void *yadfs::MasterServer::Receive(int sockfd)
       res.m_stat.st_mode = S_IFDIR | 0755;
       res.m_stat.st_nlink = 3;
       res.m_stat.st_size = 4096;
-      write(sockfd, &res, sizeof(res));
+      if (!Write(sockfd, &res, sizeof(res)))
+      {
+        return NULL;
+      }
       
       break;
     }

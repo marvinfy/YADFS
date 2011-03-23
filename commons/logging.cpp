@@ -8,16 +8,16 @@ void yadfs::Logging::log(Level level, const char *fmt, ...)
   switch (level)
   {
   case INFO:
-    printf("[INFO]");
+    printf("[YADFS][INFO]");
     break;
   case WARNING:
-    printf("[WARNING]");
+    printf("[YADFS][WARNING]");
     break;
   case ERROR:
-    printf("[ERROR]");
+    printf("[YADFS][ERROR]");
     break;
   default:
-    printf("[UNKNOWN]");
+    printf("[YADFS][UNKNOWN]");
   }
 
  va_list vl;

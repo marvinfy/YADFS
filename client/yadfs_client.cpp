@@ -30,7 +30,7 @@ int yadfs_getattr_real(const char *path, struct stat *stbuf)
   msg_req_getattr req_getattr;
   msg_res_getattr res_getattr;
 
-  if (!client->Connect())
+  if (client->Connect() < 0)
   {
     return -ENOTCONN; // -ECONNREFUSED;
   }
