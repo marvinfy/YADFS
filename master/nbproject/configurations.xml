@@ -43,6 +43,16 @@
         <platform>2</platform>
       </toolsSet>
       <compileType>
+        <cTool>
+          <preprocessorList>
+            <Elem>_FILE_OFFSET_BITS=64</Elem>
+          </preprocessorList>
+        </cTool>
+        <ccTool>
+          <preprocessorList>
+            <Elem>_FILE_OFFSET_BITS=64</Elem>
+          </preprocessorList>
+        </ccTool>
         <linkerTool>
           <linkerLibItems>
             <linkerLibStdlibItem>PosixThreads</linkerLibStdlibItem>

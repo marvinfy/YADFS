@@ -48,7 +48,6 @@
           </incDir>
           <preprocessorList>
             <Elem>_FILE_OFFSET_BITS=64</Elem>
-            <Elem>_GNU_SOURCE</Elem>
           </preprocessorList>
         </cTool>
         <ccTool>

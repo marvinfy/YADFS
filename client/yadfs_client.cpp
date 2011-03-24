@@ -38,15 +38,16 @@ int yadfs_getattr_real(const char *path, struct stat *stbuf)
     return -EPROTO; // -EILSEQ, -EPROTO
   }
 
+
   msg_req_getattr req_getattr;
   strcpy(req_getattr.m_path, path);
-  if (!client->Write(&req_getattr, sizeof(msg_req_getattr)))
+  if (!client->Write(&req_getattr, sizeof(req_getattr)))
   {
     return -EPROTO;
   }
 
   msg_res_getattr res_getattr;
-  if (!client->Read(&res_getattr, sizeof(msg_res_getattr)))
+  if (!client->Read(&res_getattr, sizeof(res_getattr)))
   {
     return -EPROTO;
   }
@@ -56,7 +57,7 @@ int yadfs_getattr_real(const char *path, struct stat *stbuf)
     return -res_getattr.m_err;
   }
 
-  memcpy(stbuf, &res_getattr.m_stat, sizeof(stbuf));
+  memcpy(stbuf, &res_getattr.m_stat, sizeof(struct stat));
   
   client->Close();
 

@@ -11,8 +11,8 @@
 
 #include <unistd.h>
 #include <iostream>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
 using yadfs::Logging;
 
@@ -92,12 +92,21 @@ void *yadfs::MasterServer::Receive(int sockfd)
     }
     case MSG_REQ_GETATTR:
     {
+      if (m_config.m_verbose)
+      {
+        Logging::log(Logging::INFO, "[MSG_REQ_GETATTR]Receiving started");
+      }
+
       msg_req_getattr req;
       if (!Read(sockfd, &req, sizeof(req)))
       {
         return NULL;
       }
-      // Ignore path for now..
+      if (m_config.m_verbose)
+      {
+        Logging::log(Logging::INFO, "[MSG_REQ_GETATTR]Path: %s", req.m_path);
+      }
+      // req.m_path - ignore for now..
 
       msg_res_getattr res;
       memset(&res, 0, sizeof(res));
@@ -108,6 +117,11 @@ void *yadfs::MasterServer::Receive(int sockfd)
       if (!Write(sockfd, &res, sizeof(res)))
       {
         return NULL;
+      }
+
+      if (m_config.m_verbose)
+      {
+        Logging::log(Logging::INFO, "[MSG_REQ_GETATTR]OK", req.m_path);
       }
       
       break;

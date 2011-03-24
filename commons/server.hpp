@@ -18,14 +18,21 @@ public:
   unsigned int m_retries;
   char *m_user;
   char *m_pass;
+  bool m_verbose;
   
   ServerConfig()
   {
     m_port = 10000;
     m_retries = 10;
+    m_verbose = false;
   }
 
-  ServerConfig(int port, int retries) : m_port(port), m_retries(retries), m_user("root"), m_pass("manager")
+  ServerConfig(int port, int retries) :
+  m_port(port),
+  m_retries(retries),
+  m_user("root"),
+  m_pass("manager"),
+  m_verbose(false)
   {
   }
 };

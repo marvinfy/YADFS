@@ -67,17 +67,17 @@ dist/Debug/GNU-Linux-x86/libcommons.a: ${OBJECTFILES}
 ${OBJECTDIR}/server.o: server.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/server.o server.cpp
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/server.o server.cpp
 
 ${OBJECTDIR}/client.o: client.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/client.o client.cpp
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/client.o client.cpp
 
 ${OBJECTDIR}/logging.o: logging.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/logging.o logging.cpp
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/logging.o logging.cpp
 
 # Subprojects
 .build-subprojects:
