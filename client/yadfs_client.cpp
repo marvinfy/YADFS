@@ -10,7 +10,7 @@ using yadfs::ClientConfig;
 using yadfs::Client;
 
 ClientConfig *config = NULL;
-Client *client = NULL;
+static Client *client = NULL;
 
 int yadfs_client_init(char *host, int port)
 {
@@ -37,7 +37,6 @@ int yadfs_getattr_real(const char *path, struct stat *stbuf)
   {
     return -EPROTO; // -EILSEQ, -EPROTO
   }
-
 
   msg_req_getattr req_getattr;
   strcpy(req_getattr.m_path, path);
@@ -67,43 +66,56 @@ int yadfs_getattr_real(const char *path, struct stat *stbuf)
 int yadfs_readdir_real(const char *path, void *buf, fuse_fill_dir_t filler,
 		       off_t offset, struct fuse_file_info *fi)
 {
-  /*
-  int sockfd;
-  msg_req_handshake req_hs;
+  if (client->Connect() < 0)
+  {
+    return -ENOTCONN;
+  }
+
+  msg_req_handshake req_handshake;
+  req_handshake.m_msg_id = MSG_REQ_READDIR;
+  if (!client->Write(&req_handshake, sizeof(msg_req_handshake)))
+  {
+    return -EPROTO;
+  }
+
+  // Requests the number of entries in the path
   msg_req_readdir req_readdir;
+  strcpy(req_readdir.m_path, path);
+  if (!client->Write(&req_readdir, sizeof(req_readdir)))
+  {
+    return -EPROTO;
+  }
+
+  // Retrieves the number of entries
   msg_res_readdir res_readdir;
-  msg_req_dirent req_dirent;
-  msg_res_dirent res_dirent;
-  int i;
-
-  sockfd = socket_open();
-  if (sockfd < 0)
+  if (!client->Read(&res_readdir, sizeof(res_readdir)))
   {
-    return -errno;
+    return -EPROTO;
   }
 
-  req_hs.m_msg_id = MSG_REQ_READDIR;
-  strcpy(&req_readdir.m_path, path);
-
-  write(sockfd, &req_hs, sizeof(req_hs));
-  write(sockfd, &req_readdir, sizeof(req_readdir));
-  read(sockfd, &res_readdir, sizeof(res_readdir));
-
-  if (res_readdir.m_count < 0)
+  if (res_readdir.m_children_count == -1)
   {
-    return -errno;
+    // TODO return another code? bad path!
+    return -ENODATA;
   }
 
-  strcpy(&req_dirent.m_path, path);
-  for (i = 0; i < res_readdir.m_count; i++)
+  if (res_readdir.m_children_count == 0)
   {
-    req_dirent.m_idx = i;
-    write(sockfd, &req_dirent, sizeof(req_dirent));
-    read(sockfd, &res_dirent, sizeof(res_dirent));
+    return 0;
+  }
 
+  for (int i = 0; i < res_readdir.m_children_count; i++)
+  {
+    // For each entry, reads the dirent
+    msg_res_dirent res_dirent;
+    if (!client->Read(&res_dirent, sizeof(res_dirent)))
+    {
+      return -EPROTO;
+    }
+
+    // Passes the stat to FUSE
     struct stat st;
     memset(&st, 0, sizeof(st));
-
     st.st_ino = res_dirent.m_dirent.d_ino;
     st.st_mode = res_dirent.m_dirent.d_type << 12;
     if (filler(buf, res_dirent.m_dirent.d_name, &st, 0))
@@ -111,69 +123,6 @@ int yadfs_readdir_real(const char *path, void *buf, fuse_fill_dir_t filler,
       break;
     }
   }
-
-  socket_close(sockfd);
-  */
+  
   return 0;
 }
-
-/*
-#include <dirent.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <netdb.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stddef.h>
-#include <sys/types.h>
-
-int socket_open()
-{
-  int sockfd;
-  struct hostent *server;
-  struct sockaddr_in srv_addr;
-
-  sockfd = socket(AF_INET, SOCK_STREAM, 0);
-  if (sockfd < 0)
-  {
-    // Logging::log(Logging::ERROR, "Cannot open stream socket.");
-    return -1;
-  }
-
-  server = gethostbyname(host);
-  if (server == NULL)
-  {
-    // Logging::log(Logging::ERROR, "No such host.");
-    close(sockfd);
-    return -1;
-  }
-
-  memset((char *) &srv_addr, 0, sizeof(srv_addr));
-  srv_addr.sin_family = AF_INET;
-  bcopy((char *)server->h_addr,
-        (char *)&srv_addr.sin_addr.s_addr,
-        server->h_length);
-  srv_addr.sin_port = htons(port);
-
-  if (connect(sockfd, (struct sockaddr *)&srv_addr, sizeof(srv_addr)) < 0)
-  {
-    //Logging::log(Logging::ERROR, "Could not connect.");
-    close(sockfd);
-    return -1;
-  }
-
-  return sockfd;
-}
-
-static void socket_close(int sockfd)
-{
-  if (sockfd < 0)
-  {
-    return;
-  }
-  close(sockfd);
-}
-
-*/

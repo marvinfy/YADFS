@@ -6,14 +6,18 @@
  */
 
 #include "master_server.hpp"
+#include "fs.hpp"
 #include "../commons/logging.hpp"
 #include "../commons/messages.hpp"
 
-#include <unistd.h>
+#include <dirent.h>
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
+using yadfs::FileSystem;
+using yadfs::FileSystemEntry;
 using yadfs::Logging;
 
 yadfs::MasterServer::MasterServer(const ServerConfig& config) : Server(config)
@@ -128,24 +132,51 @@ void *yadfs::MasterServer::Receive(int sockfd)
     }
     case MSG_REQ_READDIR:
     {
-      /*
+      // Reads the path of the requested dir
       msg_req_readdir req_readdir;
+      if (!Read(sockfd, &req_readdir, sizeof(req_readdir)))
+      {
+        return NULL;
+      }
+
+      // Gets the entry for this path
+      FileSystemEntry *dir = m_fs.getEntry(req_readdir.m_path);
+
+      // Responds with the number of children
       msg_res_readdir res_readdir;
-      msg_req_dirent req_dirent;
-      msg_res_dirent res_dirent;
+      if (dir)
+      {
+        res_readdir.m_children_count = dir->getChildrenCount();
+      }
+      else
+      {
+        res_readdir.m_children_count = -1;
+      }
+      if (!Write(sockfd, &res_readdir, sizeof(res_readdir)))
+      {
+        return NULL;
+      }
+      if (res_readdir.m_children_count == -1)
+      {
+        return NULL;
+      }
 
-      read(sockfd, &req_readdir, sizeof(req_readdir));
+      // Writes each entry back to client
+      for (int i = 0; i < res_readdir.m_children_count; i++)
+      {
+        FileSystemEntry *child = dir->getChild(i);
+        if (child == NULL)
+        {
+          return NULL;
+        }
 
-      // Ignore path for instance..
-
-      res_readdir.m_count = 3;
-      write(sockfd, &res_readdir, sizeof(res_readdir));
-
-
-      read(sockfd, &req_dirent, sizeof(req_dirent)); // 0
-      read(sockfd, )
-      */
-
+        msg_res_dirent res_dirent;
+        memcpy(&res_dirent.m_dirent, child->getDirent(), sizeof(dirent));
+        if (!Write(sockfd, &res_dirent, sizeof(res_dirent)))
+        {
+          return NULL;
+        }
+      }
 
       break;
     }

@@ -12,7 +12,9 @@
             <make-dep-projects>
                 <make-dep-project>../commons</make-dep-project>
             </make-dep-projects>
-            <sourceRootList/>
+            <sourceRootList>
+                <sourceRootElem>../../../Desktop</sourceRootElem>
+            </sourceRootList>
             <confList>
                 <confElem>Debug</confElem>
                 <confElem>Release</confElem>

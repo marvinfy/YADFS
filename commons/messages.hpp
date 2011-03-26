@@ -36,9 +36,11 @@ typedef struct _msg_req_handshake {
 /*
  * Not in use right now
  */
+/*
 typedef struct _msg_res_handshake {
   int m_session_id;
 } msg_res_handshake;
+*/
 
 typedef struct _msg_req_echo {
   int m_len;
@@ -68,18 +70,21 @@ typedef struct _msg_res_getattr {
 typedef msg_req_path msg_req_readdir;
 
 typedef struct _msg_res_readdir {
-  int m_count;
+  int m_children_count;
 } msg_res_readdir;
 
+/*
+ * Not in use right now
+ */
+/*
 typedef struct _msg_req_dirent {
   char m_path[256];
   int m_idx;
 } msg_req_dirent;
+*/
 
 typedef struct _msg_res_dirent {
   struct dirent m_dirent;
 } msg_res_dirent;
 
-
 #endif	/* MESSAGES_HPP */
-

@@ -9,6 +9,7 @@
 #define	MASTERSERVER_HPP
 
 #include "../commons/server.hpp"
+#include "fs.hpp"
 
 namespace yadfs
 {
@@ -16,6 +17,7 @@ namespace yadfs
 class MasterServer : public Server
 {
 private:
+  FileSystem m_fs;
 public:
   MasterServer(const ServerConfig& config);
   MasterServer(const MasterServer& orig);

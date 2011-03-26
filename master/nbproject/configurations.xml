@@ -8,6 +8,8 @@
       <itemPath>chunk.hpp</itemPath>
       <itemPath>file.hpp</itemPath>
       <itemPath>file_manager.hpp</itemPath>
+      <itemPath>fs.hpp</itemPath>
+      <itemPath>fs_entry.hpp</itemPath>
       <itemPath>master_server.hpp</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
@@ -19,6 +21,8 @@
                    displayName="Source Files"
                    projectFiles="true"
                    kind="SOURCE_LOGICAL_FOLDER">
+      <itemPath>fs.cpp</itemPath>
+      <itemPath>fs_entry.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
       <itemPath>master_server.cpp</itemPath>
     </logicalFolder>
@@ -34,6 +38,9 @@
       <itemPath>Makefile</itemPath>
     </logicalFolder>
   </logicalFolder>
+  <sourceRootList>
+    <Elem>../../../Desktop</Elem>
+  </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
     <conf name="Debug" type="1">

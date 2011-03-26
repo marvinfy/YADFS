@@ -34,7 +34,9 @@ OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/master_server.o \
-	${OBJECTDIR}/main.o
+	${OBJECTDIR}/fs.o \
+	${OBJECTDIR}/main.o \
+	${OBJECTDIR}/fs_entry.o
 
 
 # C Compiler Flags
@@ -66,10 +68,20 @@ ${OBJECTDIR}/master_server.o: master_server.cpp
 	${RM} $@.d
 	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/master_server.o master_server.cpp
 
+${OBJECTDIR}/fs.o: fs.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/fs.o fs.cpp
+
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/main.o main.cpp
+
+${OBJECTDIR}/fs_entry.o: fs_entry.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/fs_entry.o fs_entry.cpp
 
 # Subprojects
 .build-subprojects:
