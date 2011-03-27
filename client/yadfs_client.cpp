@@ -93,12 +93,11 @@ int yadfs_readdir_real(const char *path, void *buf, fuse_fill_dir_t filler,
     return -EPROTO;
   }
 
-  if (res_readdir.m_children_count == -1)
+  if (res_readdir.m_children_count < 0)
   {
-    // TODO return another code? bad path!
-    return -ENODATA;
+    return res_readdir.m_children_count;
   }
-
+  
   if (res_readdir.m_children_count == 0)
   {
     return 0;

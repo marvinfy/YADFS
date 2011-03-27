@@ -31,11 +31,24 @@
 #include <sys/xattr.h>
 #endif
 
+static const char *origem = "/home/marcusviniciusns/dummy_origem";
+
+static void get_new_path(const char *path, char *new_path, size_t size)
+{
+  memset(new_path, 0, size);
+  strcpy(new_path, origem);
+  strcpy(&new_path[strlen(origem)], path);
+}
+
+
 static int xmp_getattr(const char *path, struct stat *stbuf)
 {
 	int res;
 
-	res = lstat(path, stbuf);
+        char new_path[512];
+        get_new_path(path, new_path, 512);
+
+	res = lstat(new_path, stbuf);
 	if (res == -1)
 		return -errno;
 
@@ -51,7 +64,10 @@ static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	(void) offset;
 	(void) fi;
 
-	dp = opendir(path);
+        char new_path[512];
+        get_new_path(path, new_path, 512);
+
+	dp = opendir(new_path);
 	if (dp == NULL)
 		return -errno;
 
