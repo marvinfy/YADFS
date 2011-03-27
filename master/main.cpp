@@ -7,7 +7,7 @@ using yadfs::MasterServer;
 
 int main(int argc, char* argv[])
 {
-  ServerConfig srvConfig(10000, 5);
+  ServerConfig srvConfig(10005, 5);
   srvConfig.m_verbose = true;
   
   MasterServer server(srvConfig);

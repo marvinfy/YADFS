@@ -9,6 +9,7 @@
 #define	FS_ENTRY_HPP
 
 #include <dirent.h>
+#include <sys/stat.h>
 #include <iterator>
 #include <string>
 #include <map>
@@ -25,31 +26,19 @@ class FileSystemEntry
 private:
   dirent m_dirent;
   vector<FileSystemEntry> m_children;
+  off_t m_size;
 
+  void init(ino_t ino, unsigned char type, const char *name);
 public:
   FileSystemEntry();
+  FileSystemEntry(ino_t ino, unsigned char type, const char *name);
   FileSystemEntry(const FileSystemEntry& orig);
   virtual ~FileSystemEntry();
-
-  dirent *getDirent()
-  {
-    return &m_dirent;
-  }
-
-  int getChildrenCount()
-  {
-    return m_children.size();
-  }
-
-  FileSystemEntry *getChild(int index)
-  {
-    if (index < m_children.size())
-    {
-      return &m_children[index];
-    }
-    return NULL;
-  }
-  
+  dirent *getDirent();
+  int getChildrenCount();
+  FileSystemEntry *getChild(int index);
+  bool isDirectory();
+  off_t getSize();
 };
 
 }

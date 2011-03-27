@@ -15,32 +15,25 @@
 
 using std::string;
 using std::map;
+using std::pair;
 
 namespace yadfs
 {
 
-typedef map<string, FileSystemEntry> entry_map;
+typedef map<string, FileSystemEntry *> entry_map;
 typedef entry_map::iterator entry_it;
+typedef pair<string, FileSystemEntry *> entry_pair;
 
 class FileSystem
 {
 private:
-  FileSystemEntry m_root;
+  FileSystemEntry *m_root;
   entry_map m_entries;
 public:
   FileSystem();
   FileSystem(const FileSystem& orig);
   virtual ~FileSystem();
-  FileSystemEntry *getEntry(string path)
-  {
-    entry_it it = m_entries.find(path);
-    if(it == m_entries.end())
-    {
-      return NULL;
-    }
-    return &it->second;
-  }
-
+  FileSystemEntry *getEntry(const string& path);
 };
 
 }
