@@ -101,7 +101,7 @@ void *yadfs::MasterServer::Receive(int sockfd)
       Logging::log(Logging::INFO, "[MSG_REQ_GETATTR]Receiving started");
 
     msg_req_getattr req;
-    if (!Read(sockfd, &req, sizeof (req)))
+    if (!Read(sockfd, &req, sizeof (msg_req_getattr)))
     {
       return NULL;
     }
@@ -114,7 +114,7 @@ void *yadfs::MasterServer::Receive(int sockfd)
     FileSystemEntry *entry = m_fs.getEntry(path);
 
     msg_res_getattr res;
-    memset(&res, 0, sizeof (res));
+    memset(&res, 0, sizeof(msg_res_getattr));
     if (entry == NULL)
     {
       res.m_err = -ENOENT;
@@ -135,7 +135,7 @@ void *yadfs::MasterServer::Receive(int sockfd)
         res.m_stat.st_size = entry->getSize();
       }
     }
-    if (!Write(sockfd, &res, sizeof (res)))
+    if (!Write(sockfd, &res, sizeof(msg_res_getattr)))
     {
       return NULL;
     }
@@ -149,7 +149,7 @@ void *yadfs::MasterServer::Receive(int sockfd)
   {
     // Reads the path of the requested dir
     msg_req_readdir req_readdir;
-    if (!Read(sockfd, &req_readdir, sizeof (req_readdir)))
+    if (!Read(sockfd, &req_readdir, sizeof(msg_req_readdir)))
     {
       return NULL;
     }
@@ -175,7 +175,7 @@ void *yadfs::MasterServer::Receive(int sockfd)
     {
       res_readdir.m_children_count = -ENOENT;
     }
-    if (!Write(sockfd, &res_readdir, sizeof (res_readdir)))
+    if (!Write(sockfd, &res_readdir, sizeof(msg_res_readdir)))
     {
       return NULL;
     }
@@ -185,17 +185,19 @@ void *yadfs::MasterServer::Receive(int sockfd)
     }
 
     // Writes each entry back to client
+    FileSystemEntry *child;
+    msg_res_dirent res_dirent;
     for (int i = 0; i < res_readdir.m_children_count; i++)
     {
-      FileSystemEntry *child = dir->getChild(i);
+      child = dir->getChild(i);
       if (child == NULL)
       {
         return NULL;
       }
 
-      msg_res_dirent res_dirent;
-      memcpy(&res_dirent.m_dirent, child->getDirent(), sizeof (dirent));
-      if (!Write(sockfd, &res_dirent, sizeof (res_dirent)))
+      memset(&res_dirent, 0, sizeof(msg_res_dirent));
+      memcpy(&res_dirent.m_dirent, child->getDirent(), sizeof(dirent));
+      if (!Write(sockfd, &res_dirent, sizeof(msg_res_dirent)))
       {
         return NULL;
       }
@@ -203,6 +205,7 @@ void *yadfs::MasterServer::Receive(int sockfd)
 
     break;
   }
+
   }
 
   return NULL;

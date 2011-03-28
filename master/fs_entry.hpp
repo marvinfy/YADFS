@@ -28,7 +28,8 @@ private:
   vector<FileSystemEntry> m_children;
   off_t m_size;
 
-  void init(ino_t ino, unsigned char type, const char *name);
+  static void init(FileSystemEntry& instance, ino_t ino, unsigned char type,
+                   const char *name);
 public:
   FileSystemEntry();
   FileSystemEntry(ino_t ino, unsigned char type, const char *name);

@@ -17,9 +17,9 @@ yadfs::FileSystemEntry::FileSystemEntry(ino_t ino, unsigned char type,
   FileSystemEntry curDir;
   FileSystemEntry parDir;
 
-  init(ino, type, name);
-  curDir.init(0, DT_DIR, ".");
-  parDir.init(0, DT_DIR, "..");
+  init(*this, ino, type, name);
+  init(curDir, 0, DT_DIR, ".");
+  init(parDir, 0, DT_DIR, "..");
 
   m_children.push_back(curDir);
   m_children.push_back(parDir);
@@ -27,19 +27,22 @@ yadfs::FileSystemEntry::FileSystemEntry(ino_t ino, unsigned char type,
 
 yadfs::FileSystemEntry::FileSystemEntry(const FileSystemEntry& orig)
 {
+  m_size = orig.m_size;
+  memcpy(&m_dirent, &orig.m_dirent, sizeof(dirent));
+  m_children.operator =(orig.m_children);
 }
 
 yadfs::FileSystemEntry::~FileSystemEntry()
 {
 }
 
-void yadfs::FileSystemEntry::init(ino_t ino, unsigned char type,
-                                  const char *name)
+void yadfs::FileSystemEntry::init(FileSystemEntry& instance, ino_t ino,
+                                  unsigned char type, const char *name)
 {
-  memset(&m_dirent, 0, sizeof(dirent));
-  m_dirent.d_ino = ino;
-  m_dirent.d_type = type;
-  strncpy(m_dirent.d_name, name, NAME_MAX + 1);
+  memset(&instance.m_dirent, 0, sizeof(dirent));
+  instance.m_dirent.d_ino = ino;
+  instance.m_dirent.d_type = type;
+  strncpy(instance.m_dirent.d_name, name, NAME_MAX + 1);
 }
 
 dirent *yadfs::FileSystemEntry::getDirent()
