@@ -6,6 +6,7 @@
  */
 
 #include "fs_entry.hpp"
+#include <string.h>
 
 yadfs::FileSystemEntry::FileSystemEntry() : m_size(0)
 {
@@ -16,13 +17,23 @@ yadfs::FileSystemEntry::FileSystemEntry(ino_t ino, unsigned char type,
 {
   FileSystemEntry curDir;
   FileSystemEntry parDir;
+  FileSystemEntry tmpFile_01;
+  FileSystemEntry tmpFile_02;
 
   init(*this, ino, type, name);
   init(curDir, 0, DT_DIR, ".");
   init(parDir, 0, DT_DIR, "..");
+  init(tmpFile_01, 0, DT_REG, "dummy_01.txt");
+  init(tmpFile_02, 0, DT_REG, "dummy_02.txt");
+
+  tmpFile_01.m_size = 8192;
+  tmpFile_02.m_size = 819200;
+
 
   m_children.push_back(curDir);
   m_children.push_back(parDir);
+  m_children.push_back(tmpFile_01);
+  m_children.push_back(tmpFile_02);
 }
 
 yadfs::FileSystemEntry::FileSystemEntry(const FileSystemEntry& orig)

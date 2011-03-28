@@ -34,6 +34,7 @@ public:
   FileSystem(const FileSystem& orig);
   virtual ~FileSystem();
   FileSystemEntry *getEntry(const string& path);
+  void addEntry(FileSystemEntry *entry);
 };
 
 }

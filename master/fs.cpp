@@ -37,4 +37,14 @@ yadfs::FileSystemEntry *yadfs::FileSystem::getEntry(const string& path)
   return it->second;
 }
 
+void yadfs::FileSystem::addEntry(FileSystemEntry *entry)
+{
+  /*
+  entry_pair p;
+  p.first = entry.m_dirent.d_name;
+  p.second = *entry;
+
+  m_entries.insert(p);
+   * */
+}
 

@@ -23,6 +23,7 @@ namespace yadfs
 
 class FileSystemEntry
 {
+  friend class FileSystem;
 private:
   dirent m_dirent;
   vector<FileSystemEntry> m_children;

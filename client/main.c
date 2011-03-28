@@ -30,7 +30,8 @@ int main(int argc, char* argv[])
 {
   int ret;
   
-  ret = yadfs_client_init("192.168.1.4", 10005);
+  //ret = yadfs_client_init("192.168.1.4", 10005);
+  ret = yadfs_client_init("localhost", 10005);
   if (ret != 0)
   {
     return ret;
