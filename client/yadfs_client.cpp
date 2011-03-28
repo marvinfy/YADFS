@@ -40,13 +40,13 @@ int yadfs_getattr_real(const char *path, struct stat *stbuf)
 
   msg_req_getattr req_getattr;
   strcpy(req_getattr.m_path, path);
-  if (!client->Write(&req_getattr, sizeof(req_getattr)))
+  if (!client->Write(&req_getattr, sizeof(msg_req_getattr)))
   {
     return -EPROTO;
   }
 
   msg_res_getattr res_getattr;
-  if (!client->Read(&res_getattr, sizeof(res_getattr)))
+  if (!client->Read(&res_getattr, sizeof(msg_res_getattr)))
   {
     return -EPROTO;
   }
@@ -81,14 +81,14 @@ int yadfs_readdir_real(const char *path, void *buf, fuse_fill_dir_t filler,
   // Requests the number of entries in the path
   msg_req_readdir req_readdir;
   strcpy(req_readdir.m_path, path);
-  if (!client->Write(&req_readdir, sizeof(req_readdir)))
+  if (!client->Write(&req_readdir, sizeof(msg_req_readdir)))
   {
     return -EPROTO;
   }
 
   // Retrieves the number of entries
   msg_res_readdir res_readdir;
-  if (!client->Read(&res_readdir, sizeof(res_readdir)))
+  if (!client->Read(&res_readdir, sizeof(msg_res_readdir)))
   {
     return -EPROTO;
   }
@@ -107,14 +107,14 @@ int yadfs_readdir_real(const char *path, void *buf, fuse_fill_dir_t filler,
   {
     // For each entry, reads the dirent
     msg_res_dirent res_dirent;
-    if (!client->Read(&res_dirent, sizeof(res_dirent)))
+    if (!client->Read(&res_dirent, sizeof(msg_res_dirent)))
     {
       return -EPROTO;
     }
 
     // Passes the stat to FUSE
     struct stat st;
-    memset(&st, 0, sizeof(st));
+    memset(&st, 0, sizeof(struct stat));
     st.st_ino = res_dirent.m_dirent.d_ino;
     st.st_mode = res_dirent.m_dirent.d_type << 12;
     if (filler(buf, res_dirent.m_dirent.d_name, &st, 0))
