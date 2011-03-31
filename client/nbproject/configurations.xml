@@ -5,6 +5,8 @@
                    displayName="Header Files"
                    projectFiles="true"
                    kind="SOURCE_LOGICAL_FOLDER">
+      <itemPath>fuse.h</itemPath>
+      <itemPath>yadfs_client.hpp</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -15,7 +17,9 @@
                    displayName="Source Files"
                    projectFiles="true"
                    kind="SOURCE_LOGICAL_FOLDER">
-      <itemPath>main.cpp</itemPath>
+      <itemPath>main.c</itemPath>
+      <itemPath>opa.cpp</itemPath>
+      <itemPath>yadfs_client.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"
@@ -34,12 +38,23 @@
     <conf name="Debug" type="1">
       <toolsSet>
         <developmentServer>localhost</developmentServer>
-        <compilerSet>Cygwin|Cygwin</compilerSet>
-        <platform>3</platform>
+        <compilerSet>GNU|GNU</compilerSet>
+        <platform>2</platform>
       </toolsSet>
       <compileType>
+        <cTool>
+          <preprocessorList>
+            <Elem>_FILE_OFFSET_BITS=64</Elem>
+          </preprocessorList>
+        </cTool>
+        <ccTool>
+          <preprocessorList>
+            <Elem>_FILE_OFFSET_BITS=64</Elem>
+          </preprocessorList>
+        </ccTool>
         <linkerTool>
           <linkerLibItems>
+            <linkerLibLibItem>fuse</linkerLibLibItem>
             <linkerLibProjectItem>
               <makeArtifact PL="../commons"
                             CT="3"
@@ -49,7 +64,7 @@
                             WD="../commons"
                             BC="${MAKE}  -f Makefile CONF=Debug"
                             CC="${MAKE}  -f Makefile CONF=Debug clean"
-                            OP="dist/Debug/Cygwin-Windows/libcommons.a">
+                            OP="dist/Debug/GNU-Linux-x86/libcommons.a">
               </makeArtifact>
             </linkerLibProjectItem>
           </linkerLibItems>

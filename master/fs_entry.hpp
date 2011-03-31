@@ -25,12 +25,14 @@ class FileSystemEntry
 {
   friend class FileSystem;
 private:
+  string m_path;
   dirent m_dirent;
-  vector<FileSystemEntry> m_children;
+  vector<FileSystemEntry *> m_children;
   off_t m_size;
 
-  static void init(FileSystemEntry& instance, ino_t ino, unsigned char type,
+  static void init(FileSystemEntry* instance, ino_t ino, unsigned char type,
                    const char *name);
+  bool addChild(FileSystemEntry *child);
 public:
   FileSystemEntry();
   FileSystemEntry(ino_t ino, unsigned char type, const char *name);

@@ -27,14 +27,14 @@ typedef pair<string, FileSystemEntry *> entry_pair;
 class FileSystem
 {
 private:
-  FileSystemEntry *m_root;
   entry_map m_entries;
 public:
   FileSystem();
   FileSystem(const FileSystem& orig);
   virtual ~FileSystem();
   FileSystemEntry *getEntry(const string& path);
-  void addEntry(FileSystemEntry *entry);
+  bool addEntry(const string& parentPath, FileSystemEntry *child);
+  bool addEntry(FileSystemEntry *parent, FileSystemEntry *child);
 };
 
 }
