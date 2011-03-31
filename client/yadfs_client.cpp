@@ -53,7 +53,7 @@ int yadfs_getattr_real(const char *path, struct stat *stbuf)
   
   if (res_getattr.m_err != 0)
   {
-    return -res_getattr.m_err;
+    return res_getattr.m_err;
   }
 
   memcpy(stbuf, &res_getattr.m_stat, sizeof(struct stat));
