@@ -33,7 +33,6 @@ OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
-	${OBJECTDIR}/opa.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/yadfs_client.o
 
@@ -63,11 +62,6 @@ dist/Debug/GNU-Linux-x86/client: ../commons/dist/Debug/GNU-Linux-x86/libcommons.
 dist/Debug/GNU-Linux-x86/client: ${OBJECTFILES}
 	${MKDIR} -p dist/Debug/GNU-Linux-x86
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/client ${OBJECTFILES} ${LDLIBSOPTIONS} 
-
-${OBJECTDIR}/opa.o: opa.cpp 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/opa.o opa.cpp
 
 ${OBJECTDIR}/main.o: main.c 
 	${MKDIR} -p ${OBJECTDIR}

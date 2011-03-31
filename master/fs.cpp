@@ -82,39 +82,3 @@ bool yadfs::FileSystem::addEntry(FileSystemEntry *parent, FileSystemEntry *child
 
   return addEntry(parent->m_path, child);
 }
-/*
-bool yadfs::FileSystem::addRootEntry(FileSystemEntry *entry)
-{
-  return m_root.addChild(entry);
-}
-
-bool yadfs::FileSystem::addEntry(const string& parentPath, FileSystemEntry *entry)
-{
-  FileSystemEntry *parent = getEntry(parentPath);
-  if (parent == NULL)
-  {
-    return false;
-  }
-
-  
-  parent->addChild(child);
-}
-
-bool yadfs::FileSystem::addEntry(FileSystemEntry *parent, FileSystemEntry *entry)
-{
-  entry_pair ep;
-  ep.first = entry->m_dirent.d_name;
-  ep.second = entry;
-
-  m_entries.insert(root_pair);
-
-
-}
- */
-/*
-entry_pair p;
-p.first = entry.m_dirent.d_name;
-p.second = *entry;
-
-m_entries.insert(p);
- * */

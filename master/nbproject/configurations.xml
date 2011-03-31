@@ -5,9 +5,6 @@
                    displayName="Header Files"
                    projectFiles="true"
                    kind="SOURCE_LOGICAL_FOLDER">
-      <itemPath>chunk.hpp</itemPath>
-      <itemPath>file.hpp</itemPath>
-      <itemPath>file_manager.hpp</itemPath>
       <itemPath>fs.hpp</itemPath>
       <itemPath>fs_entry.hpp</itemPath>
       <itemPath>master_server.hpp</itemPath>
