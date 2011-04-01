@@ -49,6 +49,21 @@ void yadfs::FileSystemEntry::init(FileSystemEntry *instance, ino_t ino,
   instance->m_dirent.d_type = type;
   strncpy(instance->m_dirent.d_name, name, NAME_MAX + 1);
 
+  memset(&instance->m_stat, 0, sizeof(struct stat));
+  if (type == DT_DIR)
+  {
+    instance->m_stat.st_mode = S_IFDIR | 0755;
+    instance->m_stat.st_nlink = 2;
+    instance->m_stat.st_size = 4096; // Default directory size
+  }
+  else
+  {
+    assert(type == DT_REG); // Must be DT_REG
+    instance->m_stat.st_mode = S_IFREG | 0666;
+    instance->m_stat.st_nlink = 1;
+    instance->m_stat.st_size = 0;
+  }
+
   instance->m_path = name;
 }
 
@@ -57,9 +72,15 @@ dirent *yadfs::FileSystemEntry::getDirent()
   return &m_dirent;
 }
 
+struct stat *yadfs::FileSystemEntry::getStat()
+{
+  return &m_stat;
+}
+
 int yadfs::FileSystemEntry::getChildrenCount()
 {
-  return m_children.size();
+  assert(m_children.size() == m_stat.st_nlink);
+  return m_stat.st_nlink;
 }
 
 yadfs::FileSystemEntry *yadfs::FileSystemEntry::getChild(int index)
@@ -98,6 +119,7 @@ bool yadfs::FileSystemEntry::addChild(FileSystemEntry *child)
   }
 
   m_children.push_back(child);
+  m_stat.st_nlink++;
 
   return true;
 }

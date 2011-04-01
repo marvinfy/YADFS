@@ -125,3 +125,54 @@ int yadfs_readdir_real(const char *path, void *buf, fuse_fill_dir_t filler,
   
   return 0;
 }
+
+int yadfs_mknod_real(const char *path, mode_t mode, dev_t rdev)
+{
+  if (client->Connect() < 0)
+  {
+    return -ENOTCONN;
+  }
+
+  msg_req_handshake req_handshake;
+  req_handshake.m_msg_id = MSG_REQ_MKNOD;
+  if (!client->Write(&req_handshake, sizeof(msg_req_handshake)))
+  {
+    return -EPROTO;
+  }
+
+  msg_req_mknod req_mknod;
+  strcpy(req_mknod.m_path, path);
+  req_mknod.m_mode = mode;
+  req_mknod.m_rdev = rdev;
+  if (!client->Write(&req_mknod, sizeof(msg_req_mknod)))
+  {
+    return -EPROTO;
+  }
+
+  msg_res_mknod res_mknod;
+  if (!client->Read(&res_mknod, sizeof(msg_res_mknod)))
+  {
+    return -EPROTO;
+  }
+
+  return res_mknod.m_err;
+}
+
+int yadfs_utimens_real(const char *path, const struct timespec ts[2])
+{
+  /*
+	int res;
+	struct timeval tv[2];
+
+	tv[0].tv_sec = ts[0].tv_sec;
+	tv[0].tv_usec = ts[0].tv_nsec / 1000;
+	tv[1].tv_sec = ts[1].tv_sec;
+	tv[1].tv_usec = ts[1].tv_nsec / 1000;
+
+	res = utimes(path, tv);
+	if (res == -1)
+		return -errno;
+  */
+	return 0;
+}
+

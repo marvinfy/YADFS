@@ -21,9 +21,21 @@ static int yadfs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
   return yadfs_readdir_real(path, buf, filler, offset, fi);
 }
 
+static int yadfs_mknod(const char *path, mode_t mode, dev_t rdev)
+{
+  return yadfs_mknod_real(path, mode, rdev);
+}
+
+static int yadfs_utimens(const char *path, const struct timespec ts[2])
+{
+  return yadfs_utimens_real(path, ts);
+}
+
 static struct fuse_operations yadfs_operations = {
   .getattr   = yadfs_getattr,
-  .readdir   = yadfs_readdir
+  .readdir   = yadfs_readdir,
+  .mknod     = yadfs_mknod,
+  .utimens   = yadfs_utimens
 };
 
 int main(int argc, char* argv[])

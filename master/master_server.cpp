@@ -97,17 +97,11 @@ void *yadfs::MasterServer::Receive(int sockfd)
   }
   case MSG_REQ_GETATTR:
   {
-    if (m_config.m_verbose)
-      Logging::log(Logging::INFO, "[MSG_REQ_GETATTR]Receiving started");
-
     msg_req_getattr req;
     if (!Read(sockfd, &req, sizeof (msg_req_getattr)))
     {
       return NULL;
     }
-
-    if (m_config.m_verbose)
-      Logging::log(Logging::INFO, "[MSG_REQ_GETATTR]Path: %s", req.m_path);
 
     // Gets the entry for this path
     string path(req.m_path);
@@ -122,26 +116,12 @@ void *yadfs::MasterServer::Receive(int sockfd)
     else
     {
       res.m_err = 0;
-      if (entry->isDirectory())
-      {
-        res.m_stat.st_mode = S_IFDIR | 0755;
-        res.m_stat.st_nlink = entry->getChildrenCount();
-        res.m_stat.st_size = 4096; // Default directory size
-      }
-      else
-      {
-        res.m_stat.st_mode = S_IFREG | 0666;
-        res.m_stat.st_nlink = 1;
-        res.m_stat.st_size = entry->getSize();
-      }
+      memcpy(&res.m_stat, entry->getStat(), sizeof(struct stat));
     }
     if (!Write(sockfd, &res, sizeof(msg_res_getattr)))
     {
       return NULL;
     }
-
-    if (m_config.m_verbose)
-      Logging::log(Logging::INFO, "[MSG_REQ_GETATTR]OK", req.m_path);
 
     break;
   }
@@ -203,6 +183,64 @@ void *yadfs::MasterServer::Receive(int sockfd)
       }
     }
 
+    break;
+  }
+  case MSG_REQ_MKNOD:
+  {
+    msg_req_mknod req_mknod;
+    if (!Read(sockfd, &req_mknod, sizeof(msg_req_mknod)))
+    {
+      return NULL;
+    }
+    
+    msg_res_mknod res_mknod;
+    if (!S_ISREG(req_mknod.m_mode))
+    {
+      res_mknod.m_err = -EPERM;
+    }
+    else
+    {
+      FileSystemEntry *file;
+      string path(req_mknod.m_path);
+
+      file = m_fs.getEntry(path);
+      if (file)
+      {
+        res_mknod.m_err = -EEXIST;
+      }
+      else
+      {
+        int idx = path.find_last_of('/');
+
+        string fileName = path.substr(idx + 1);
+        string parentPath;
+        if (idx == 0)
+        {
+          parentPath = "/";
+        }
+        else
+        {
+          parentPath = path.substr(0, idx - 1);
+        }
+
+        FileSystemEntry *parent = m_fs.getEntry(parentPath);
+        FileSystemEntry *child = new FileSystemEntry(0, DT_REG, fileName.c_str());
+        if (m_fs.addEntry(parent, child))
+        {
+          res_mknod.m_err = 0;
+        }
+        else
+        {
+          delete child;
+          res_mknod.m_err = -ENOENT;
+        }
+      }
+    }
+
+    if (!Write(sockfd, &res_mknod, sizeof(msg_res_mknod)))
+    {
+      return NULL;
+    }
     break;
   }
 

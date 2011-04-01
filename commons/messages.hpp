@@ -26,7 +26,9 @@ enum msgs
   MSG_REQ_GETATTR,
   MSG_RES_GETATTR,
   MSG_REQ_READDIR,
-  MSG_RES_READDIR
+  MSG_RES_READDIR,
+  MSG_REQ_MKNOD,
+  MSG_RES_MKNOD
 };
 
 typedef struct _msg_req_handshake {
@@ -86,5 +88,15 @@ typedef struct _msg_req_dirent {
 typedef struct _msg_res_dirent {
   struct dirent m_dirent;
 } msg_res_dirent;
+
+typedef struct _msg_req_mknod {
+  char m_path[256];
+  mode_t m_mode;
+  dev_t m_rdev;
+} msg_req_mknod;
+
+typedef struct _msg_res_mknod {
+  int m_err;
+} msg_res_mknod;
 
 #endif	/* MESSAGES_HPP */

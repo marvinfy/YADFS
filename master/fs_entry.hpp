@@ -8,11 +8,12 @@
 #ifndef FS_ENTRY_HPP
 #define	FS_ENTRY_HPP
 
+#include <assert.h>
 #include <dirent.h>
-#include <sys/stat.h>
 #include <iterator>
 #include <string>
 #include <map>
+#include <sys/stat.h>
 #include <vector>
 
 using std::string;
@@ -27,6 +28,7 @@ class FileSystemEntry
 private:
   string m_path;
   dirent m_dirent;
+  struct stat m_stat;
   vector<FileSystemEntry *> m_children;
   off_t m_size;
 
@@ -39,6 +41,7 @@ public:
   FileSystemEntry(const FileSystemEntry& orig);
   virtual ~FileSystemEntry();
   dirent *getDirent();
+  struct stat *getStat();
   int getChildrenCount();
   FileSystemEntry *getChild(int index);
   bool isDirectory();

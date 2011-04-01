@@ -18,6 +18,9 @@ int yadfs_client_init(char *host, int port);
 int yadfs_getattr_real(const char *path, struct stat *stbuf);
 int yadfs_readdir_real(const char *path, void *buf, fuse_fill_dir_t filler,
 		       off_t offset, struct fuse_file_info *fi);
+int yadfs_mknod_real(const char *path, mode_t mode, dev_t rdev);
+int yadfs_utimens_real(const char *path, const struct timespec ts[2]);
+
 
 #ifdef	__cplusplus
 }
