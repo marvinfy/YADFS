@@ -31,11 +31,26 @@ static int yadfs_utimens(const char *path, const struct timespec ts[2])
   return yadfs_utimens_real(path, ts);
 }
 
+
+static int yadfs_open(const char *path, struct fuse_file_info *fi)
+{
+  return yadfs_open_real(path, fi);
+}
+
+
+static int yadfs_write(const char *path, const char *buf, size_t size,
+                     off_t offset, struct fuse_file_info *fi)
+{
+  return yadfs_write_real(path, buf, size, offset, fi);
+}
+
 static struct fuse_operations yadfs_operations = {
   .getattr   = yadfs_getattr,
   .readdir   = yadfs_readdir,
   .mknod     = yadfs_mknod,
-  .utimens   = yadfs_utimens
+  .utimens   = yadfs_utimens,
+  .open      = yadfs_open,
+  .write     = yadfs_write
 };
 
 int main(int argc, char* argv[])

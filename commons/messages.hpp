@@ -11,6 +11,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <fuse.h>
 
 #pragma pack(16)
 
@@ -28,7 +29,9 @@ enum msgs
   MSG_REQ_READDIR,
   MSG_RES_READDIR,
   MSG_REQ_MKNOD,
-  MSG_RES_MKNOD
+  MSG_RES_MKNOD,
+  MSG_REQ_OPEN,
+  MSG_RES_OPEN
 };
 
 typedef struct _msg_req_handshake {
@@ -98,5 +101,15 @@ typedef struct _msg_req_mknod {
 typedef struct _msg_res_mknod {
   int m_err;
 } msg_res_mknod;
+
+typedef struct _msg_req_open {
+  char m_path[256];
+  struct fuse_file_info fi;
+} msg_req_open;
+
+typedef struct _msg_res_open {
+  int m_err;
+} msg_res_open;
+
 
 #endif	/* MESSAGES_HPP */

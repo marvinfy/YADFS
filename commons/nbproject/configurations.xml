@@ -5,6 +5,7 @@
                    displayName="Header Files"
                    projectFiles="true"
                    kind="SOURCE_LOGICAL_FOLDER">
+      <itemPath>chunk.h</itemPath>
       <itemPath>client.hpp</itemPath>
       <itemPath>logging.hpp</itemPath>
       <itemPath>messages.hpp</itemPath>

@@ -6,7 +6,6 @@
  */
 
 #include "fs_entry.hpp"
-#include <string.h>
 
 yadfs::FileSystemEntry::FileSystemEntry() : m_size(0)
 {

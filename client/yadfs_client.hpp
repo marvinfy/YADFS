@@ -20,7 +20,9 @@ int yadfs_readdir_real(const char *path, void *buf, fuse_fill_dir_t filler,
 		       off_t offset, struct fuse_file_info *fi);
 int yadfs_mknod_real(const char *path, mode_t mode, dev_t rdev);
 int yadfs_utimens_real(const char *path, const struct timespec ts[2]);
-
+int yadfs_open_real(const char *path, struct fuse_file_info *fi);
+int yadfs_write_real(const char *path, const char *buf, size_t size,
+                     off_t offset, struct fuse_file_info *fi);
 
 #ifdef	__cplusplus
 }

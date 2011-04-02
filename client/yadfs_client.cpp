@@ -176,3 +176,58 @@ int yadfs_utimens_real(const char *path, const struct timespec ts[2])
 	return 0;
 }
 
+int yadfs_open_real(const char *path, struct fuse_file_info *fi)
+{
+  if (client->Connect() < 0)
+  {
+    return -ENOTCONN;
+  }
+
+  msg_req_handshake req_handshake;
+  req_handshake.m_msg_id = MSG_REQ_OPEN;
+  if (!client->Write(&req_handshake, sizeof(msg_req_handshake)))
+  {
+    return -EPROTO;
+  }
+
+  msg_req_open req_open;
+  strcpy(req_open.m_path, path);
+  memcpy(&req_open.fi, fi, sizeof(struct fuse_file_info));
+  if (!client->Write(&req_open, sizeof(msg_req_open)))
+  {
+    return -EPROTO;
+  }
+
+  msg_res_open res_open;
+  if (!client->Read(&res_open, sizeof(msg_res_open)))
+  {
+    return -EPROTO;
+  }
+
+  return res_open.m_err;
+}
+
+int yadfs_write_real(const char *path, const char *buf, size_t size,
+                     off_t offset, struct fuse_file_info *fi)
+{
+  /*
+  int fd;
+  int res;
+
+  char new_path[512];
+  get_new_path(path, new_path, 512);
+
+  (void) fi;
+  fd = open(new_path, O_WRONLY);
+  if (fd == -1)
+    return -errno;
+
+  res = pwrite(fd, buf, size, offset);
+  if (res == -1)
+    res = -errno;
+
+  close(fd);
+  return res;
+   */
+  return size;
+}

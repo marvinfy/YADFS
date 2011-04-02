@@ -21,7 +21,8 @@ using yadfs::FileSystem;
 using yadfs::FileSystemEntry;
 using yadfs::Logging;
 
-yadfs::MasterServer::MasterServer(const ServerConfig& config) : Server(config)
+yadfs::MasterServer::MasterServer(const MasterServerConfig *config) :
+Server(*(ServerConfig *) config)
 {
 
 }
@@ -34,10 +35,15 @@ yadfs::MasterServer::~MasterServer()
 {
 }
 
+void yadfs::MasterServer::registerDataNode(const DataNode& node)
+{
+  m_data_nodes.push_back(node);
+}
+
 void *yadfs::MasterServer::Receive(int sockfd)
 {
   msg_req_handshake msg_hs;
-  if (!Read(sockfd, &msg_hs, sizeof (msg_hs)))
+  if (!Read(sockfd, &msg_hs, sizeof(msg_req_handshake)))
   {
     return NULL;
   }
@@ -47,7 +53,7 @@ void *yadfs::MasterServer::Receive(int sockfd)
   case MSG_REQ_ECHO:
   {
     msg_req_echo req;
-    if (!Read(sockfd, &req, sizeof (req)))
+    if (!Read(sockfd, &req, sizeof(msg_req_echo)))
     {
       return NULL;
     }
@@ -66,7 +72,7 @@ void *yadfs::MasterServer::Receive(int sockfd)
   case MSG_REQ_SHUTDOWN:
   {
     msg_req_shutdown req;
-    if (!Read(sockfd, &req, sizeof (req)))
+    if (!Read(sockfd, &req, sizeof(msg_req_shutdown)))
     {
       return NULL;
     }
@@ -81,7 +87,7 @@ void *yadfs::MasterServer::Receive(int sockfd)
     {
       res.m_ok = false;
     }
-    if (!Write(sockfd, &res, sizeof (res)))
+    if (!Write(sockfd, &res, sizeof(msg_res_shutdown)))
     {
       return NULL;
     }
@@ -98,7 +104,7 @@ void *yadfs::MasterServer::Receive(int sockfd)
   case MSG_REQ_GETATTR:
   {
     msg_req_getattr req;
-    if (!Read(sockfd, &req, sizeof (msg_req_getattr)))
+    if (!Read(sockfd, &req, sizeof(msg_req_getattr)))
     {
       return NULL;
     }
@@ -192,7 +198,7 @@ void *yadfs::MasterServer::Receive(int sockfd)
     {
       return NULL;
     }
-    
+
     msg_res_mknod res_mknod;
     if (!S_ISREG(req_mknod.m_mode))
     {
@@ -223,8 +229,10 @@ void *yadfs::MasterServer::Receive(int sockfd)
           parentPath = path.substr(0, idx - 1);
         }
 
-        FileSystemEntry *parent = m_fs.getEntry(parentPath);
-        FileSystemEntry *child = new FileSystemEntry(0, DT_REG, fileName.c_str());
+        FileSystemEntry *parent = NULL;
+        FileSystemEntry *child = NULL;
+        parent = m_fs.getEntry(parentPath);
+        child = new FileSystemEntry(0, DT_REG, fileName.c_str());
         if (m_fs.addEntry(parent, child))
         {
           res_mknod.m_err = 0;
@@ -241,6 +249,43 @@ void *yadfs::MasterServer::Receive(int sockfd)
     {
       return NULL;
     }
+    break;
+  }
+  case MSG_REQ_OPEN:
+  {
+    msg_req_open req_open;
+    if (!Read(sockfd, &req_open, sizeof(msg_req_open)))
+    {
+      return NULL;
+    }
+
+    string path(req_open.m_path);
+    FileSystemEntry *entry = m_fs.getEntry(path);
+
+    msg_res_open res_open;
+    if (entry && !entry->isDirectory())
+    {
+      res_open.m_err = 0;
+    }
+    else
+    {
+      res_open.m_err = -1;
+    }
+
+    if (!Write(sockfd, &res_open, sizeof(msg_res_open)))
+    {
+      return NULL;
+    }
+
+    /*
+    int res;
+    res = open(path, fi->flags);
+    if (res == -1)
+      return -errno;
+
+    close(res);
+     */
+
     break;
   }
 
