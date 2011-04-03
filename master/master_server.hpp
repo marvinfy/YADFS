@@ -20,40 +20,18 @@ using std::vector;
 namespace yadfs
 {
 
-class MasterServerConfig : public ServerConfig
-{
-private:
-  Mode m_mode;
-public:
-
-  MasterServerConfig() : ServerConfig()
-  {
-  }
-
-  MasterServerConfig(int port, int retries, Mode mode = RAID_0) :
-  ServerConfig(port, retries), m_mode(mode)
-  {
-  }
-
-  Mode getMode()
-  {
-    return m_mode;
-  }
-};
-
 class MasterServer : public Server
 {
 private:
   FileSystem m_fs;
   vector<DataNode> m_data_nodes;
-  MasterServerConfig *getConfig()
-  {
-    return (MasterServerConfig *)&m_config;
-  }
+  Mode m_mode;
 public:
-  MasterServer(const MasterServerConfig *config);
+  MasterServer(const ServerConfig& config);
   MasterServer(const MasterServer& orig);
   virtual ~MasterServer();
+  void setMode(Mode mode) { m_mode = mode; }
+  Mode getMode() { return m_mode; }
   void registerDataNode(const DataNode& node);
   void *Receive(int sockfd);
 };

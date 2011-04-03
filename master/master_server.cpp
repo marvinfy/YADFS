@@ -21,8 +21,8 @@ using yadfs::FileSystem;
 using yadfs::FileSystemEntry;
 using yadfs::Logging;
 
-yadfs::MasterServer::MasterServer(const MasterServerConfig *config) :
-Server(*(ServerConfig *) config)
+yadfs::MasterServer::MasterServer(const ServerConfig& config) : Server(config),
+m_mode(RAID_0)
 {
 
 }
@@ -291,9 +291,8 @@ void *yadfs::MasterServer::Receive(int sockfd)
   case MSG_REQ_SERVERCONFIG:
   {
     msg_res_serverconfig res_srvcfg;
-    MasterServerConfig *config = getConfig();
-    
-    res_srvcfg.m_mode = config->getMode();
+
+    res_srvcfg.m_mode = m_mode;
     res_srvcfg.m_node_count = m_data_nodes.size();
 
     if (!Write(sockfd, &res_srvcfg, sizeof(msg_res_serverconfig)))

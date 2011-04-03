@@ -44,20 +44,26 @@ static int yadfs_write(const char *path, const char *buf, size_t size,
   return yadfs_write_real(path, buf, size, offset, fi);
 }
 
+static int yadfs_release(const char *path, struct fuse_file_info *fi)
+{
+  return yadfs_release_real(path, fi);
+}
+
 static struct fuse_operations yadfs_operations = {
   .getattr   = yadfs_getattr,
   .readdir   = yadfs_readdir,
   .mknod     = yadfs_mknod,
   .utimens   = yadfs_utimens,
   .open      = yadfs_open,
-  .write     = yadfs_write
+  .write     = yadfs_write,
+  .release   = yadfs_release
 };
 
 int main(int argc, char* argv[])
 {
   int ret;
 
-  //sleep(15);
+  // sleep(15);
 
   ret = yadfs_client_init("localhost", 10005);
   if (ret != 0)

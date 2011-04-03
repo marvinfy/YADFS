@@ -62,6 +62,7 @@ int yadfs_utimens_real(const char *path, const struct timespec ts[2]);
 int yadfs_open_real(const char *path, struct fuse_file_info *fi);
 int yadfs_write_real(const char *path, const char *buf, size_t size,
                      off_t offset, struct fuse_file_info *fi);
+int yadfs_release_real(const char *path, struct fuse_file_info *fi);
 
 #ifdef	__cplusplus
 }

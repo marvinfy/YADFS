@@ -277,9 +277,10 @@ int yadfs_write_real(const char *path, const char *buf, size_t size,
     node_id %= client->getNodeCount();
   }
 
+
+  byte *buffer = new byte[CHUNK_SIZE];
+  memcpy(buffer, buf, size);
   
-
-
   return size;
 
   
@@ -304,3 +305,9 @@ int yadfs_write_real(const char *path, const char *buf, size_t size,
    */
 }
 
+
+int yadfs_release_real(const char *path, struct fuse_file_info *fi)
+{
+  // wait for release!!!
+  return 0;
+}

@@ -4,13 +4,14 @@
 
 using yadfs::DataNode;
 using yadfs::MasterServer;
-using yadfs::MasterServerConfig;
+using yadfs::ServerConfig;
 
 int main(int argc, char* argv[])
 {
-  MasterServerConfig *config = new MasterServerConfig(10005, 5, RAID_0);
-
+  ServerConfig config(10005, 5);
   MasterServer server(config);
+
+  server.setMode(RAID_0);
   server.registerDataNode(DataNode("localhost", 10010));
   server.registerDataNode(DataNode("localhost", 10011));
   server.registerDataNode(DataNode("localhost", 10012));
