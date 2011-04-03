@@ -42,8 +42,8 @@ public:
   YADFSClient(const ClientConfig& config);
   virtual ~YADFSClient();
   bool init();
-  void enqueue(Operation op, const char *path, const char *buf, size_t size,
-               off_t offset);
+  void enqueueWrite(const char *path, const char *buf, size_t size,
+    off_t offset);
 };
 
 class JobData

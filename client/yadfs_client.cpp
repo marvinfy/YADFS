@@ -75,31 +75,21 @@ bool yadfs::YADFSClient::init()
   return true;
 }
 
-void yadfs::YADFSClient::enqueue(Operation op, const char *path,
-                                 const char *buf, size_t size, off_t offset)
+void yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,
+  size_t size, off_t offset)
 {
+  int chunk_id = offset / CHUNK_SIZE;
+
   if (m_mode == RAID_0)
   {
-    int worker_id;
-    worker_id = offset / CHUNK_SIZE;
-    worker_id %= m_count_cache;
+    int worker_id = chunk_id % m_count_cache;
 
-    Job *job;
+    JobData *data = new JobData();
+    memcpy(data->m_data, buf, size);
+    data->m_size = size;
+    data->m_node_client = m_node_clients[worker_id];
 
-    if (op == READ)
-    {
-    }
-    else // WRITE
-    {
-      JobData *data = new JobData();
-
-      memcpy(data->m_data, buf, size);
-      data->m_size = size;
-      data->m_node_client = m_node_clients[worker_id];
-
-      job = new Job(write_func, data);
-    }
-
+    Job *job = new Job(write_func, data);
     m_workers[worker_id]->addJob(job);
   }
   else // RAID_1
@@ -116,19 +106,21 @@ void yadfs::YADFSClient::enqueue(Operation op, const char *path,
 void write_func(void *data)
 {
   JobData *dt = (JobData *)data;
-  
+
+  /*
   if (!client->Connect())
   {
     return;
   }
-
+  client->Close();
 
   if (!dt->m_node_client->Connect())
   {
     return;
   }
-
-
+  dt->m_node_client->Close();
+  */
+  
   delete dt;
 }
 
@@ -351,7 +343,7 @@ int yadfs_open_real(const char *path, struct fuse_file_info *fi)
 int yadfs_write_real(const char *path, const char *buf, size_t size,
                      off_t offset, struct fuse_file_info *fi)
 {
-  client->enqueue(WRITE, path, buf, size, offset);
+  client->enqueueWrite(path, buf, size, offset);
   return size;
 }
 
