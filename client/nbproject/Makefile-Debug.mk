@@ -33,8 +33,10 @@ OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/job.o \
 	${OBJECTDIR}/main.o \
-	${OBJECTDIR}/yadfs_client.o
+	${OBJECTDIR}/yadfs_client.o \
+	${OBJECTDIR}/worker.o
 
 
 # C Compiler Flags
@@ -51,7 +53,7 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=-lfuse ../commons/dist/Debug/GNU-Linux-x86/libcommons.a
+LDLIBSOPTIONS=-lfuse ../commons/dist/Debug/GNU-Linux-x86/libcommons.a -lpthread
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
@@ -63,6 +65,11 @@ dist/Debug/GNU-Linux-x86/client: ${OBJECTFILES}
 	${MKDIR} -p dist/Debug/GNU-Linux-x86
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/client ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
+${OBJECTDIR}/job.o: job.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/job.o job.cpp
+
 ${OBJECTDIR}/main.o: main.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
@@ -72,6 +79,11 @@ ${OBJECTDIR}/yadfs_client.o: yadfs_client.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/yadfs_client.o yadfs_client.cpp
+
+${OBJECTDIR}/worker.o: worker.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -g -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/worker.o worker.cpp
 
 # Subprojects
 .build-subprojects:

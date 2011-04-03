@@ -1,5 +1,7 @@
 #include "fuse.h"
+#include "job.hpp"
 #include "yadfs_client.hpp"
+#include "worker.hpp"
 #include "../commons/chunk.h"
 #include "../commons/messages.hpp"
 
@@ -48,10 +50,34 @@ bool yadfs::YADFSClient::init()
     
     DataNode *dataNode = new DataNode(res_datanode.m_host, res_datanode.m_port);
     m_nodes.push_back(dataNode);
+
+    Worker *worker = new Worker();
+    m_workers.push_back(worker);
   }
 
   m_count_cache = m_nodes.size();
   return true;
+}
+
+int yadfs::YADFSClient::writeToNode(const char *path, const char *buf,
+                                    size_t size, off_t offset)
+{
+  int worker_id;
+
+  if (m_mode == RAID_0)
+  {
+    worker_id = offset / CHUNK_SIZE;
+    worker_id %= m_count_cache;
+  }
+
+  Job job;
+  m_workers[worker_id]->addJob(job);
+
+
+  // byte *buffer = new byte[CHUNK_SIZE];
+  // memcpy(buffer, buf, size);
+  
+  return size;
 }
 
 // -----------------------------------------------------------------------
@@ -263,27 +289,9 @@ int yadfs_open_real(const char *path, struct fuse_file_info *fi)
   return res_open.m_err;
 }
 
-#include <iostream>
-using std::cout;
-
 int yadfs_write_real(const char *path, const char *buf, size_t size,
                      off_t offset, struct fuse_file_info *fi)
 {
-  int node_id;
-
-  if (client->getMode() == RAID_0)
-  {
-    node_id = offset / CHUNK_SIZE;
-    node_id %= client->getNodeCount();
-  }
-
-
-  byte *buffer = new byte[CHUNK_SIZE];
-  memcpy(buffer, buf, size);
-  
-  return size;
-
-  
   /*
   int fd;
   int res;
@@ -303,8 +311,8 @@ int yadfs_write_real(const char *path, const char *buf, size_t size,
   close(fd);
   return res;
    */
+  return client->writeToNode(path, buf, size, offset);
 }
-
 
 int yadfs_release_real(const char *path, struct fuse_file_info *fi)
 {

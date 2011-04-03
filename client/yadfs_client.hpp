@@ -11,12 +11,15 @@
 
 #ifdef	__cplusplus
 
-
+#include "job.hpp"
+#include "worker.hpp"
 #include "../commons/raid_mode.h"
 #include "../commons/data_node.hpp"
 #include "../commons/client.hpp"
 #include <vector>
 
+using yadfs::Job;
+using yadfs::Worker;
 using std::vector;
 
 namespace yadfs
@@ -25,7 +28,7 @@ namespace yadfs
 class YADFSClient : public Client
 {
 private:
-  vector<YADFSClient *> m_workers;
+  vector<Worker *> m_workers;
   vector<DataNode *> m_nodes;
   Mode m_mode;
   int m_count_cache;
@@ -38,14 +41,7 @@ public:
   {
   }
   bool init();
-  int getNodeCount()
-  {
-    return m_count_cache;
-  }
-  Mode getMode()
-  {
-    return m_mode;
-  }
+  int writeToNode(const char *path, const char *buf, size_t size, off_t offset);
 };
 }
 

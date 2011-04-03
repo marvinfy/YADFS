@@ -5,8 +5,6 @@
  * Created on March 17, 2011, 11:16 PM
  */
 
-#include <string.h>
-
 #include "fuse.h"
 #include "yadfs_client.hpp"
 
@@ -37,7 +35,6 @@ static int yadfs_open(const char *path, struct fuse_file_info *fi)
   return yadfs_open_real(path, fi);
 }
 
-
 static int yadfs_write(const char *path, const char *buf, size_t size,
                      off_t offset, struct fuse_file_info *fi)
 {
@@ -63,7 +60,7 @@ int main(int argc, char* argv[])
 {
   int ret;
 
-  // sleep(15);
+  //sleep(15);
 
   ret = yadfs_client_init("localhost", 10005);
   if (ret != 0)

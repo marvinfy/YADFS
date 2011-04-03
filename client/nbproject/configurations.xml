@@ -6,6 +6,8 @@
                    projectFiles="true"
                    kind="SOURCE_LOGICAL_FOLDER">
       <itemPath>fuse.h</itemPath>
+      <itemPath>job.hpp</itemPath>
+      <itemPath>worker.hpp</itemPath>
       <itemPath>yadfs_client.hpp</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
@@ -17,7 +19,9 @@
                    displayName="Source Files"
                    projectFiles="true"
                    kind="SOURCE_LOGICAL_FOLDER">
+      <itemPath>job.cpp</itemPath>
       <itemPath>main.c</itemPath>
+      <itemPath>worker.cpp</itemPath>
       <itemPath>yadfs_client.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
@@ -66,6 +70,7 @@
                             OP="dist/Debug/GNU-Linux-x86/libcommons.a">
               </makeArtifact>
             </linkerLibProjectItem>
+            <linkerLibStdlibItem>PosixThreads</linkerLibStdlibItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>
