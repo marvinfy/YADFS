@@ -8,8 +8,6 @@
 #include "worker.hpp"
 #include "job.hpp"
 
-#include <iostream>
-
 yadfs::Worker::Worker() : m_running(true)
 {
   pthread_mutex_init(&m_mutex, NULL);
@@ -27,7 +25,7 @@ yadfs::Worker::~Worker()
 
 void *yadfs::Worker::work(void *data)
 {
-  Worker *worker = (Worker *) data;
+  Worker *worker = (Worker *)data;
 
   while (worker->m_running)
   {
@@ -36,14 +34,15 @@ void *yadfs::Worker::work(void *data)
     {
       pthread_cond_wait(&worker->m_cond, &worker->m_mutex);
     }
-    const Job& job = worker->m_queue.front();
+    Job *job = worker->m_queue.front();
     worker->m_queue.pop();
     pthread_mutex_unlock(&worker->m_mutex);
-    job.execute();
+    job->execute();
+    delete job;
   }
 }
 
-void yadfs::Worker::addJob(const Job& job)
+void yadfs::Worker::addJob(Job *job)
 {
   pthread_mutex_lock(&m_mutex);
   m_queue.push(job);

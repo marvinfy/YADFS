@@ -15,12 +15,17 @@
 #include "worker.hpp"
 #include "../commons/raid_mode.h"
 #include "../commons/data_node.hpp"
+#include "../commons/chunk.h"
 #include "../commons/client.hpp"
 #include <vector>
 
-using yadfs::Job;
-using yadfs::Worker;
 using std::vector;
+
+enum Operation
+{
+  READ,
+  WRITE
+};
 
 namespace yadfs
 {
@@ -29,20 +34,27 @@ class YADFSClient : public Client
 {
 private:
   vector<Worker *> m_workers;
-  vector<DataNode *> m_nodes;
+  vector<Client *> m_node_clients;
   Mode m_mode;
   int m_count_cache;
 
 public:
-  YADFSClient(const ClientConfig& config) : Client(config), m_count_cache(0)
-  {
-  }
-  virtual ~YADFSClient()
-  {
-  }
+  YADFSClient(const ClientConfig& config);
+  virtual ~YADFSClient();
   bool init();
-  int writeToNode(const char *path, const char *buf, size_t size, off_t offset);
+  void enqueue(Operation op, const char *path, const char *buf, size_t size,
+               off_t offset);
 };
+
+class JobData
+{
+public:
+  char m_path[256];
+  char m_data[CHUNK_SIZE];
+  size_t m_size;
+  Client *m_node_client;
+};
+
 }
 
 extern "C"
@@ -52,13 +64,18 @@ extern "C"
 int yadfs_client_init(char *host, int port);
 int yadfs_getattr_real(const char *path, struct stat *stbuf);
 int yadfs_readdir_real(const char *path, void *buf, fuse_fill_dir_t filler,
-		       off_t offset, struct fuse_file_info *fi);
+                       off_t offset, struct fuse_file_info *fi);
 int yadfs_mknod_real(const char *path, mode_t mode, dev_t rdev);
 int yadfs_utimens_real(const char *path, const struct timespec ts[2]);
 int yadfs_open_real(const char *path, struct fuse_file_info *fi);
 int yadfs_write_real(const char *path, const char *buf, size_t size,
                      off_t offset, struct fuse_file_info *fi);
+int yadfs_read_real(const char *path, char *buf, size_t size, off_t offset,
+                    struct fuse_file_info *fi);
 int yadfs_release_real(const char *path, struct fuse_file_info *fi);
+
+void write_func(void *data);
+void read_func(void *data);
 
 #ifdef	__cplusplus
 }

@@ -8,31 +8,19 @@
 #ifndef JOB_HPP
 #define	JOB_HPP
 
-#include <iostream>
-
-using std::cout;
-
 namespace yadfs
 {
 
 class Job
 {
 private:
+  void (*m_func)(void *);
+  void *m_data;
 public:
-  Job()
-  {
-  }
-  Job(const Job& orig)
-  {
-  }
-  virtual ~Job()
-  {
-  }
-
-  void execute() const
-  {
-    cout << "Executando trabalho!\n";
-  }
+  Job(void (*func)(void *), void *data);
+  Job(const Job& orig);
+  virtual ~Job();
+  void execute() const;
 };
 
 }

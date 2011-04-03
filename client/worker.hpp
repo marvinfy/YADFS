@@ -23,15 +23,15 @@ private:
   pthread_mutex_t m_mutex;
   pthread_cond_t m_cond;
   pthread_t m_thread;
-  queue<Job> m_queue;
+  queue<Job *> m_queue;
   bool m_running;
-
+  
   static void *work(void *data);
 public:
   Worker();
   Worker(const Worker& orig);
   virtual ~Worker();
-  void addJob(const Job& job);
+  void addJob(Job *job);
   void stop();
 };
 

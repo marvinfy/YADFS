@@ -6,3 +6,22 @@
  */
 
 #include "job.hpp"
+
+yadfs::Job::Job(void (*func)(void *), void *data)
+{
+  m_func = func;
+  m_data = data;
+}
+
+yadfs::Job::Job(const Job& orig)
+{
+}
+
+yadfs::Job::~Job()
+{
+}
+
+void yadfs::Job::execute() const
+{
+  m_func(m_data);
+}

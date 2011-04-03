@@ -41,6 +41,12 @@ static int yadfs_write(const char *path, const char *buf, size_t size,
   return yadfs_write_real(path, buf, size, offset, fi);
 }
 
+static int yadfs_read(const char *path, char *buf, size_t size,
+                     off_t offset, struct fuse_file_info *fi)
+{
+  return yadfs_read_real(path, buf, size, offset, fi);
+}
+
 static int yadfs_release(const char *path, struct fuse_file_info *fi)
 {
   return yadfs_release_real(path, fi);
@@ -53,6 +59,7 @@ static struct fuse_operations yadfs_operations = {
   .utimens   = yadfs_utimens,
   .open      = yadfs_open,
   .write     = yadfs_write,
+  .read      = yadfs_read,
   .release   = yadfs_release
 };
 
