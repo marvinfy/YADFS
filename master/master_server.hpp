@@ -8,45 +8,17 @@
 #ifndef MASTERSERVER_HPP
 #define	MASTERSERVER_HPP
 
-#include "../commons/server.hpp"
 #include "fs.hpp"
+#include "../commons/data_node.hpp"
+#include "../commons/raid_mode.h"
+#include "../commons/server.hpp"
+
 #include <vector>
 
 using std::vector;
 
-enum Mode
-{
-  RAID_1,
-  RAID_5
-};
-
 namespace yadfs
 {
-
-class MasterServer;
-
-class DataNode
-{
-  friend class MasterServer;
-private:
-  string m_host;
-  int m_port;
-
-public:
-  DataNode(const string& host, int port) : m_host(host), m_port(port)
-  {
-  }
-
-  DataNode(const DataNode& orig)
-  {
-    m_host = orig.m_host;
-    m_port = orig.m_port;
-  }
-
-  virtual ~DataNode()
-  {
-  }
-};
 
 class MasterServerConfig : public ServerConfig
 {
@@ -58,9 +30,14 @@ public:
   {
   }
 
-  MasterServerConfig(int port, int retries, Mode mode = RAID_5) :
+  MasterServerConfig(int port, int retries, Mode mode = RAID_0) :
   ServerConfig(port, retries), m_mode(mode)
   {
+  }
+
+  Mode getMode()
+  {
+    return m_mode;
   }
 };
 
@@ -69,6 +46,10 @@ class MasterServer : public Server
 private:
   FileSystem m_fs;
   vector<DataNode> m_data_nodes;
+  MasterServerConfig *getConfig()
+  {
+    return (MasterServerConfig *)&m_config;
+  }
 public:
   MasterServer(const MasterServerConfig *config);
   MasterServer(const MasterServer& orig);

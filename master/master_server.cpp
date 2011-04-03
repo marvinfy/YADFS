@@ -288,6 +288,34 @@ void *yadfs::MasterServer::Receive(int sockfd)
 
     break;
   }
+  case MSG_REQ_SERVERCONFIG:
+  {
+    msg_res_serverconfig res_srvcfg;
+    MasterServerConfig *config = getConfig();
+    
+    res_srvcfg.m_mode = config->getMode();
+    res_srvcfg.m_node_count = m_data_nodes.size();
+
+    if (!Write(sockfd, &res_srvcfg, sizeof(msg_res_serverconfig)))
+    {
+      return NULL;
+    }
+
+    for (int i = 0; i < res_srvcfg.m_node_count; i++)
+    {
+      msg_res_datanode datanode;
+      
+      DataNode node = m_data_nodes[i];
+      strcpy(datanode.m_host, node.getHost()->c_str());
+      datanode.m_port = node.getPort();
+      if (!Write(sockfd, &datanode, sizeof(msg_res_datanode)))
+      {
+        return NULL;
+      }
+    }
+    
+    break;
+  }
 
   }
 

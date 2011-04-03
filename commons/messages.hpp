@@ -8,6 +8,8 @@
 #ifndef MESSAGES_HPP
 #define	MESSAGES_HPP
 
+#include "raid_mode.h"
+
 #include <dirent.h>
 #include <sys/stat.h>
 #include <time.h>
@@ -31,7 +33,8 @@ enum msgs
   MSG_REQ_MKNOD,
   MSG_RES_MKNOD,
   MSG_REQ_OPEN,
-  MSG_RES_OPEN
+  MSG_RES_OPEN,
+  MSG_REQ_SERVERCONFIG
 };
 
 typedef struct _msg_req_handshake {
@@ -111,5 +114,14 @@ typedef struct _msg_res_open {
   int m_err;
 } msg_res_open;
 
+typedef struct _msg_res_serverconfig {
+  Mode m_mode;
+  int m_node_count;
+} msg_res_serverconfig;
+
+typedef struct _msg_res_datanode {
+  char m_host[128];
+  int m_port;
+} msg_res_datanode;
 
 #endif	/* MESSAGES_HPP */

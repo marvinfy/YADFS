@@ -56,15 +56,14 @@ static struct fuse_operations yadfs_operations = {
 int main(int argc, char* argv[])
 {
   int ret;
-  
-  //ret = yadfs_client_init("192.168.1.4", 10005);
+
+  //sleep(15);
+
   ret = yadfs_client_init("localhost", 10005);
   if (ret != 0)
   {
     return ret;
   }
-
-  //sleep(10);
   
   ret = fuse_main(argc, argv, &yadfs_operations, NULL);
   

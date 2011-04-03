@@ -10,6 +10,45 @@
 #include <fuse.h>
 
 #ifdef	__cplusplus
+
+
+#include "../commons/raid_mode.h"
+#include "../commons/data_node.hpp"
+#include "../commons/client.hpp"
+#include <vector>
+
+using std::vector;
+
+namespace yadfs
+{
+
+class YADFSClient : public Client
+{
+private:
+  vector<YADFSClient *> m_workers;
+  vector<DataNode *> m_nodes;
+  Mode m_mode;
+  int m_count_cache;
+
+public:
+  YADFSClient(const ClientConfig& config) : Client(config), m_count_cache(0)
+  {
+  }
+  virtual ~YADFSClient()
+  {
+  }
+  bool init();
+  int getNodeCount()
+  {
+    return m_count_cache;
+  }
+  Mode getMode()
+  {
+    return m_mode;
+  }
+};
+}
+
 extern "C"
 {
 #endif

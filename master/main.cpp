@@ -8,11 +8,14 @@ using yadfs::MasterServerConfig;
 
 int main(int argc, char* argv[])
 {
-  MasterServerConfig *config = new MasterServerConfig(10005, 5, RAID_5);
+  MasterServerConfig *config = new MasterServerConfig(10005, 5, RAID_0);
 
   MasterServer server(config);
   server.registerDataNode(DataNode("localhost", 10010));
   server.registerDataNode(DataNode("localhost", 10011));
+  server.registerDataNode(DataNode("localhost", 10012));
+  server.registerDataNode(DataNode("localhost", 10013));
+
   server.Start();
 
   return 0;

@@ -7,8 +7,10 @@
                    kind="SOURCE_LOGICAL_FOLDER">
       <itemPath>chunk.h</itemPath>
       <itemPath>client.hpp</itemPath>
+      <itemPath>data_node.hpp</itemPath>
       <itemPath>logging.hpp</itemPath>
       <itemPath>messages.hpp</itemPath>
+      <itemPath>raid_mode.h</itemPath>
       <itemPath>server.hpp</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"

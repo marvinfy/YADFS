@@ -1,17 +1,62 @@
 #include "fuse.h"
 #include "yadfs_client.hpp"
-#include "../commons/client.hpp"
+#include "../commons/chunk.h"
 #include "../commons/messages.hpp"
 
 #include <string.h>
 #include <errno.h>
+#include <pthread.h>
 
+using std::string;
 using yadfs::ClientConfig;
-using yadfs::Client;
+using yadfs::YADFSClient;
 
 ClientConfig *config = NULL;
-static Client *client = NULL;
+static YADFSClient *client = NULL;
 
+// -----------------------------------------------------------------------
+// C++ Methods
+// -----------------------------------------------------------------------
+bool yadfs::YADFSClient::init()
+{
+  if (Connect() < 0)
+  {
+    return false;
+  }
+
+  msg_req_handshake req_handshake;
+  req_handshake.m_msg_id = MSG_REQ_SERVERCONFIG;
+  if (!client->Write(&req_handshake, sizeof(msg_req_handshake)))
+  {
+    return false;
+  }
+
+  msg_res_serverconfig res_srvcfg;
+  if (!client->Read(&res_srvcfg, sizeof(msg_res_serverconfig)))
+  {
+    return false;
+  }
+
+  m_mode = res_srvcfg.m_mode;
+  for (int i = 0; i < res_srvcfg.m_node_count; i++)
+  {
+    msg_res_datanode res_datanode;
+    if (!client->Read(&res_datanode, sizeof(msg_res_datanode)))
+    {
+      return false;
+    }
+    
+    DataNode *dataNode = new DataNode(res_datanode.m_host, res_datanode.m_port);
+    m_nodes.push_back(dataNode);
+  }
+
+  m_count_cache = m_nodes.size();
+  return true;
+}
+
+// -----------------------------------------------------------------------
+// C Functions
+// -----------------------------------------------------------------------
 int yadfs_client_init(char *host, int port)
 {
   if (config)
@@ -19,7 +64,18 @@ int yadfs_client_init(char *host, int port)
     delete config;
   }
   config = new ClientConfig(host, port);
-  client = new Client(*config);
+
+
+  if (client)
+  {
+    delete client;
+  }
+  client = new YADFSClient(*config);
+  
+  if (!client->init())
+  {
+    return -1;
+  }
   
   return 0;
 }
@@ -207,9 +263,26 @@ int yadfs_open_real(const char *path, struct fuse_file_info *fi)
   return res_open.m_err;
 }
 
+#include <iostream>
+using std::cout;
+
 int yadfs_write_real(const char *path, const char *buf, size_t size,
                      off_t offset, struct fuse_file_info *fi)
 {
+  int node_id;
+
+  if (client->getMode() == RAID_0)
+  {
+    node_id = offset / CHUNK_SIZE;
+    node_id %= client->getNodeCount();
+  }
+
+  
+
+
+  return size;
+
+  
   /*
   int fd;
   int res;
@@ -229,5 +302,5 @@ int yadfs_write_real(const char *path, const char *buf, size_t size,
   close(fd);
   return res;
    */
-  return size;
 }
+
