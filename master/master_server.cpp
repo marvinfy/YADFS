@@ -312,6 +312,64 @@ void *yadfs::MasterServer::Receive(int sockfd)
     
     break;
   }
+  case MSG_REQ_GETSIZE:
+  {
+    msg_req_getsize req_getsize;
+    if (!Read(sockfd, &req_getsize, sizeof(msg_req_getsize)))
+    {
+      return NULL;
+    }
+
+    string path(req_getsize.m_path);
+    FileSystemEntry *entry = m_fs.getEntry(path);
+
+    msg_res_getsize res_getsize;
+    if (entry)
+    {
+      res_getsize.m_ok = true;
+      res_getsize.m_size = entry->getSize();
+    }
+    else
+    {
+      res_getsize.m_ok = false;
+      res_getsize.m_size = 0;
+    }
+
+    if (!Write(sockfd, &res_getsize, sizeof(msg_res_getsize)))
+    {
+      return NULL;
+    }
+
+    break;
+  }
+  case MSG_REQ_SETSIZE:
+  {
+    msg_req_setsize req_setsize;
+    if (!Read(sockfd, &req_setsize, sizeof(msg_req_setsize)))
+    {
+      return NULL;
+    }
+
+    msg_res_setsize res_setsize;
+    string path(req_setsize.m_path);
+    FileSystemEntry *entry = m_fs.getEntry(path);
+    if (entry)
+    {
+      entry->setSize(req_setsize.m_size);
+      res_setsize.m_ok = true;
+    }
+    else
+    {
+      res_setsize.m_ok = false;
+    }
+
+    if (!Write(sockfd, &res_setsize, sizeof(msg_res_setsize)))
+    {
+      return NULL;
+    }
+
+    break;
+  }
 
   }
 

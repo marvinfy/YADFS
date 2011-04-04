@@ -17,24 +17,29 @@
 #include "../commons/data_node.hpp"
 #include "../commons/chunk.h"
 #include "../commons/client.hpp"
+
+#include <map>
 #include <vector>
 
+using std::map;
+using std::pair;
 using std::vector;
 
-enum Operation
-{
-  READ,
-  WRITE
-};
 
 namespace yadfs
 {
+
+typedef map<string, size_t> sizes_map;
+typedef sizes_map::iterator sizes_it;
+typedef pair<string, size_t> sizes_pair;
+
 
 class YADFSClient : public Client
 {
 private:
   vector<Worker *> m_workers;
   vector<Client *> m_node_clients;
+  sizes_map m_sizes;
   Mode m_mode;
   int m_count_cache;
 
@@ -44,6 +49,42 @@ public:
   bool init();
   void enqueueWrite(const char *path, const char *buf, size_t size,
     off_t offset);
+  int releaseWrite(const char *path);
+
+  void incSize(const string& path, size_t size)
+  {
+    sizes_it it = m_sizes.find(path);
+    if (it == m_sizes.end())
+    {
+      sizes_pair p;
+      p.first = path;
+      p.second = size;
+      m_sizes.insert(p);
+      return;
+    }
+    it->second += size;
+  }
+
+  size_t getSize(const string& path)
+  {
+    sizes_it it = m_sizes.find(path);
+    if (it == m_sizes.end())
+    {
+      return 0;
+    }
+    return it->second;
+  }
+
+  void remSize(const string& path)
+  {
+    sizes_it it = m_sizes.find(path);
+    if (it == m_sizes.end())
+    {
+      return;
+    }
+    m_sizes.erase(it);
+  }
+
 };
 
 class JobData

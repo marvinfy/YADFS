@@ -34,7 +34,9 @@ enum msgs
   MSG_RES_MKNOD,
   MSG_REQ_OPEN,
   MSG_RES_OPEN,
-  MSG_REQ_SERVERCONFIG
+  MSG_REQ_SERVERCONFIG,
+  MSG_REQ_GETSIZE,
+  MSG_REQ_SETSIZE
 };
 
 typedef struct _msg_req_handshake {
@@ -123,5 +125,23 @@ typedef struct _msg_res_datanode {
   char m_host[128];
   int m_port;
 } msg_res_datanode;
+
+typedef struct _msg_req_getsize {
+  char m_path[256];
+} msg_req_getsize;
+
+typedef struct _msg_res_getsize {
+  boolean m_ok;
+  size_t m_size;
+} msg_res_getsize;
+
+typedef struct _msg_req_setsize {
+  char m_path[256];
+  size_t m_size;
+} msg_req_setsize;
+
+typedef struct _msg_res_setsize {
+  boolean m_ok;
+} msg_res_setsize;
 
 #endif	/* MESSAGES_HPP */

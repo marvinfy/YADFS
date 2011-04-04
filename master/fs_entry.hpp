@@ -32,8 +32,6 @@ private:
   string m_path;
   dirent m_dirent;
   struct stat m_stat;
-  off_t m_size;
-  vector<chunk *> m_chunks;
   vector<FileSystemEntry *> m_children;
 
   static void init(FileSystemEntry* instance, ino_t ino, unsigned char type,
@@ -48,6 +46,7 @@ public:
   dirent *getDirent();
   struct stat *getStat();
   off_t getSize();
+  void setSize(off_t size);
   int getChildrenCount();
   FileSystemEntry *getChild(int index);
   bool isDirectory();

@@ -7,12 +7,12 @@
 
 #include "fs_entry.hpp"
 
-yadfs::FileSystemEntry::FileSystemEntry() : m_size(0)
+yadfs::FileSystemEntry::FileSystemEntry()
 {
 }
 
 yadfs::FileSystemEntry::FileSystemEntry(ino_t ino, unsigned char type,
-                                        const char *name) : m_size(0)
+                                        const char *name)
 {
   init(this, ino, type, name);
 
@@ -31,8 +31,8 @@ yadfs::FileSystemEntry::FileSystemEntry(ino_t ino, unsigned char type,
 yadfs::FileSystemEntry::FileSystemEntry(const FileSystemEntry& orig)
 {
   m_path = orig.m_path;
-  m_size = orig.m_size;
-  memcpy(&m_dirent, &orig.m_dirent, sizeof(dirent));
+  memcpy(&m_dirent, &orig.m_dirent, sizeof (dirent));
+  memcpy(&m_stat, &orig.m_stat, sizeof (struct stat));
   m_children.operator =(orig.m_children);
 }
 
@@ -43,12 +43,12 @@ yadfs::FileSystemEntry::~FileSystemEntry()
 void yadfs::FileSystemEntry::init(FileSystemEntry *instance, ino_t ino,
                                   unsigned char type, const char *name)
 {
-  memset(&instance->m_dirent, 0, sizeof(dirent));
+  memset(&instance->m_dirent, 0, sizeof (dirent));
   instance->m_dirent.d_ino = ino;
   instance->m_dirent.d_type = type;
   strncpy(instance->m_dirent.d_name, name, NAME_MAX + 1);
 
-  memset(&instance->m_stat, 0, sizeof(struct stat));
+  memset(&instance->m_stat, 0, sizeof (struct stat));
   if (type == DT_DIR)
   {
     instance->m_stat.st_mode = S_IFDIR | 0755;
@@ -78,6 +78,10 @@ struct stat *yadfs::FileSystemEntry::getStat()
 
 int yadfs::FileSystemEntry::getChildrenCount()
 {
+  if (!isDirectory())
+  {
+    return -1;
+  }
   assert(m_children.size() == m_stat.st_nlink);
   return m_stat.st_nlink;
 }
@@ -98,7 +102,16 @@ bool yadfs::FileSystemEntry::isDirectory()
 
 off_t yadfs::FileSystemEntry::getSize()
 {
-  return m_size;
+  return m_stat.st_size;
+}
+
+void yadfs::FileSystemEntry::setSize(off_t size)
+{
+  if (isDirectory())
+  {
+    return;
+  }
+  m_stat.st_size = size;
 }
 
 bool yadfs::FileSystemEntry::addChild(FileSystemEntry *child)

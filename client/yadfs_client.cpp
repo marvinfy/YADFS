@@ -97,6 +97,48 @@ void yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,
     //m_workers[0]->addJob(*job);
     //m_workers[1]->addJob(*job);
   }
+
+  client->incSize(path, size);
+}
+
+int yadfs::YADFSClient::releaseWrite(const char *path)
+{
+  if (Connect() < 0)
+  {
+    return -ENOTCONN;
+  }
+
+  msg_req_handshake req_handshake;
+  req_handshake.m_msg_id = MSG_REQ_SETSIZE;
+  if (!Write(&req_handshake, sizeof(msg_req_handshake)))
+  {
+    return -EPROTO;
+  }
+
+  msg_req_setsize req_setsize;
+  strcpy(req_setsize.m_path, path);
+  req_setsize.m_size = getSize(path);
+  
+  if (!Write(&req_setsize, sizeof (msg_req_setsize)))
+  {
+    return -EPROTO;
+  }
+
+  msg_res_setsize res_setsize;
+  if (!Read(&res_setsize, sizeof (msg_res_setsize)))
+  {
+    return -EPROTO;
+  }
+
+  if (!res_setsize.m_ok)
+  {
+    return -ENOENT;
+  }
+
+
+  // ESPERAR TODO MUNDO ESCREVER!!!
+
+  return 0;
 }
 
 // -----------------------------------------------------------------------
@@ -374,6 +416,6 @@ int yadfs_read_real(const char *path, char *buf, size_t size, off_t offset,
 
 int yadfs_release_real(const char *path, struct fuse_file_info *fi)
 {
-  // wait for release!!!
+  client->releaseWrite(path);
   return 0;
 }
