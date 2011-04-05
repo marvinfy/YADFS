@@ -43,6 +43,11 @@ private:
   Mode m_mode;
   int m_count_cache;
 
+  int m_waiting_count;
+  string m_path_to_release;
+  pthread_mutex_t m_mutex;
+
+  static void doneWriting(void *instance);
 public:
   YADFSClient(const ClientConfig& config);
   virtual ~YADFSClient();

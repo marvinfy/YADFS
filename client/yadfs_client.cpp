@@ -25,8 +25,9 @@ static YADFSClient *client = NULL;
 // -----------------------------------------------------------------------
 
 yadfs::YADFSClient::YADFSClient(const ClientConfig& config) : Client(config),
-m_count_cache(0)
+m_count_cache(0), m_waiting_count(0)
 {
+  pthread_mutex_init(&m_mutex, NULL);
 }
 
 yadfs::YADFSClient::~YADFSClient()
@@ -78,10 +79,12 @@ bool yadfs::YADFSClient::init()
 void yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,
   size_t size, off_t offset)
 {
+  // Calculates the id of the chunk
   int chunk_id = offset / CHUNK_SIZE;
 
   if (m_mode == RAID_0)
   {
+    // Calculates the id of the working thread (worker_id)
     int worker_id = chunk_id % m_count_cache;
 
     JobData *data = new JobData();
@@ -90,6 +93,8 @@ void yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,
     data->m_node_client = m_node_clients[worker_id];
 
     Job *job = new Job(write_func, data);
+
+    // Schedules the job to be done by the #worker_id worker thread
     m_workers[worker_id]->addJob(job);
   }
   else // RAID_1
@@ -98,48 +103,76 @@ void yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,
     //m_workers[1]->addJob(*job);
   }
 
+  // Increments the size of this path by size
   client->incSize(path, size);
 }
 
 int yadfs::YADFSClient::releaseWrite(const char *path)
 {
-  if (Connect() < 0)
+  m_path_to_release = path;
+  m_waiting_count = m_count_cache;
+  for (int i = 0; i < m_count_cache; i++)
   {
-    return -ENOTCONN;
+    m_workers[i]->callbackWhenDone(&doneWriting, this);
+  }
+}
+
+void yadfs::YADFSClient::doneWriting(void *instance)
+{
+  YADFSClient *client = (YADFSClient *)instance;
+
+  pthread_mutex_lock(&client->m_mutex);
+  if (--client->m_waiting_count != 0)
+  {
+    cout << "done but not ready...\n";
+    pthread_mutex_unlock(&client->m_mutex);
+    return;
+  }
+  pthread_mutex_unlock(&client->m_mutex);
+  cout << "done and ready!\n";
+
+  
+  if (client->Connect() < 0)
+  {
+    return;
   }
 
   msg_req_handshake req_handshake;
   req_handshake.m_msg_id = MSG_REQ_SETSIZE;
-  if (!Write(&req_handshake, sizeof(msg_req_handshake)))
+  if (!client->Write(&req_handshake, sizeof(msg_req_handshake)))
   {
-    return -EPROTO;
+    return;
   }
 
   msg_req_setsize req_setsize;
-  strcpy(req_setsize.m_path, path);
-  req_setsize.m_size = getSize(path);
-  
-  if (!Write(&req_setsize, sizeof (msg_req_setsize)))
+  strcpy(req_setsize.m_path, client->m_path_to_release.c_str());
+  req_setsize.m_size = client->getSize(client->m_path_to_release);
+
+  if (!client->Write(&req_setsize, sizeof (msg_req_setsize)))
   {
-    return -EPROTO;
+    return;
   }
 
   msg_res_setsize res_setsize;
-  if (!Read(&res_setsize, sizeof (msg_res_setsize)))
+  if (!client->Read(&res_setsize, sizeof (msg_res_setsize)))
   {
-    return -EPROTO;
+    return;
   }
 
-  if (!res_setsize.m_ok)
-  {
-    return -ENOENT;
-  }
+  client->Close();
 
+//  if (!res_setsize.m_ok)
+//  {
+//    return;
+//  }
 
-  // ESPERAR TODO MUNDO ESCREVER!!!
+  // Clears the size entry for this path
+  client->remSize(client->m_path_to_release);
 
-  return 0;
+  return;
 }
+
+
 
 // -----------------------------------------------------------------------
 // C Functions
@@ -149,19 +182,11 @@ void write_func(void *data)
 {
   JobData *dt = (JobData *)data;
 
-  /*
-  if (!client->Connect())
-  {
-    return;
-  }
-  client->Close();
-
   if (!dt->m_node_client->Connect())
   {
     return;
   }
   dt->m_node_client->Close();
-  */
   
   delete dt;
 }

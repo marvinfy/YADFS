@@ -25,6 +25,9 @@ private:
   pthread_t m_thread;
   queue<Job *> m_queue;
   bool m_running;
+
+  void (*m_work_done)(void*);
+  void *m_work_done_param;
   
   static void *work(void *data);
 public:
@@ -32,6 +35,7 @@ public:
   Worker(const Worker& orig);
   virtual ~Worker();
   void addJob(Job *job);
+  void callbackWhenDone(void (*work_done)(void*), void *param);
   void stop();
 };
 
