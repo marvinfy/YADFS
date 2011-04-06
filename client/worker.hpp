@@ -20,23 +20,23 @@ class Job;
 class Worker
 {
 private:
-  pthread_mutex_t m_mutex;
-  pthread_cond_t m_cond;
+  pthread_mutex_t m_mutex_work;
+  pthread_mutex_t m_mutex_finished;
+  pthread_cond_t m_cond_work;
+  pthread_cond_t m_cond_finished;
   pthread_t m_thread;
   queue<Job *> m_queue;
-  bool m_running;
+  bool m_stopping;
+  bool m_waiting;
 
-  void (*m_work_done)(void*);
-  void *m_work_done_param;
-  
   static void *work(void *data);
 public:
   Worker();
   Worker(const Worker& orig);
   virtual ~Worker();
-  void addJob(Job *job);
-  void callbackWhenDone(void (*work_done)(void*), void *param);
-  void stop();
+  bool addJob(Job *job);
+  void stopWhenComplete();
+  void stopAndWaitCompletition();
 };
 
 }

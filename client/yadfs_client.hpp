@@ -13,6 +13,7 @@
 
 #include "job.hpp"
 #include "worker.hpp"
+#include "worker_pool.hpp"
 #include "../commons/raid_mode.h"
 #include "../commons/data_node.hpp"
 #include "../commons/chunk.h"
@@ -33,28 +34,34 @@ typedef map<string, size_t> sizes_map;
 typedef sizes_map::iterator sizes_it;
 typedef pair<string, size_t> sizes_pair;
 
+typedef map<string, WorkerPool *> workers_map;
+typedef workers_map::iterator workers_it;
+typedef pair<string, WorkerPool *> workers_pair;
 
 class YADFSClient : public Client
 {
 private:
-  vector<Worker *> m_workers;
+  unsigned int m_nodeCount;
+
+  // vector<Worker *> m_workers;
+  workers_map m_workers;
   vector<Client *> m_node_clients;
+  
   sizes_map m_sizes;
   Mode m_mode;
-  int m_count_cache;
 
-  int m_waiting_count;
-  string m_path_to_release;
-  pthread_mutex_t m_mutex;
+  // int m_waiting_count;
+  // string m_path_to_release;
+  // pthread_mutex_t m_mutex;
 
-  static void doneWriting(void *instance);
+  void releaseWrite(void *instance);
 public:
   YADFSClient(const ClientConfig& config);
   virtual ~YADFSClient();
   bool init();
-  void enqueueWrite(const char *path, const char *buf, size_t size,
+  bool enqueueWrite(const char *path, const char *buf, size_t size,
     off_t offset);
-  int releaseWrite(const char *path);
+  bool releaseWrite(const char *path);
 
   void incSize(const string& path, size_t size)
   {

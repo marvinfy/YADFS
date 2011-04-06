@@ -8,6 +8,7 @@
       <itemPath>fuse.h</itemPath>
       <itemPath>job.hpp</itemPath>
       <itemPath>worker.hpp</itemPath>
+      <itemPath>worker_pool.hpp</itemPath>
       <itemPath>yadfs_client.hpp</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
@@ -22,6 +23,7 @@
       <itemPath>job.cpp</itemPath>
       <itemPath>main.c</itemPath>
       <itemPath>worker.cpp</itemPath>
+      <itemPath>worker_pool.cpp</itemPath>
       <itemPath>yadfs_client.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"

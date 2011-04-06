@@ -2,6 +2,7 @@
 #include "job.hpp"
 #include "yadfs_client.hpp"
 #include "worker.hpp"
+#include "worker_pool.hpp"
 #include "../commons/chunk.h"
 #include "../commons/messages.hpp"
 
@@ -9,7 +10,6 @@
 #include <string.h>
 #include <errno.h>
 #include <pthread.h>
-
 
 using std::cout;
 using std::string;
@@ -25,9 +25,8 @@ static YADFSClient *client = NULL;
 // -----------------------------------------------------------------------
 
 yadfs::YADFSClient::YADFSClient(const ClientConfig& config) : Client(config),
-m_count_cache(0), m_waiting_count(0)
+m_nodeCount(0)
 {
-  pthread_mutex_init(&m_mutex, NULL);
 }
 
 yadfs::YADFSClient::~YADFSClient()
@@ -55,6 +54,8 @@ bool yadfs::YADFSClient::init()
   }
 
   m_mode = res_srvcfg.m_mode;
+  m_nodeCount = res_srvcfg.m_node_count;
+
   for (int i = 0; i < res_srvcfg.m_node_count; i++)
   {
     msg_res_datanode res_datanode;
@@ -67,25 +68,29 @@ bool yadfs::YADFSClient::init()
     ClientConfig config(res_datanode.m_host, res_datanode.m_port);
     Client *client = new Client(config);
     m_node_clients.push_back(client);
-
-    Worker *worker = new Worker();
-    m_workers.push_back(worker);
   }
 
-  m_count_cache = m_node_clients.size();
   return true;
 }
 
-void yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,
+bool yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,
   size_t size, off_t offset)
 {
+  if (offset == 0)
+  {
+    workers_pair pair;
+    pair.first = path;
+    pair.second = new WorkerPool(m_nodeCount);
+    m_workers.insert(pair);
+  }
+
   // Calculates the id of the chunk
   int chunk_id = offset / CHUNK_SIZE;
 
   if (m_mode == RAID_0)
   {
     // Calculates the id of the working thread (worker_id)
-    int worker_id = chunk_id % m_count_cache;
+    int worker_id = chunk_id % m_nodeCount;
 
     JobData *data = new JobData();
     memcpy(data->m_data, buf, size);
@@ -95,7 +100,12 @@ void yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,
     Job *job = new Job(write_func, data);
 
     // Schedules the job to be done by the #worker_id worker thread
-    m_workers[worker_id]->addJob(job);
+    workers_it it = m_workers.find(path);
+    if (it == m_workers.end())
+    {
+      return false;
+    }
+    it->second->addJob(worker_id, job);
   }
   else // RAID_1
   {
@@ -105,89 +115,78 @@ void yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,
 
   // Increments the size of this path by size
   client->incSize(path, size);
+  return true;
 }
 
-int yadfs::YADFSClient::releaseWrite(const char *path)
+bool yadfs::YADFSClient::releaseWrite(const char *path)
 {
-  m_path_to_release = path;
-  m_waiting_count = m_count_cache;
-  for (int i = 0; i < m_count_cache; i++)
+  workers_it it = m_workers.find(path);
+  if (it == m_workers.end())
   {
-    m_workers[i]->callbackWhenDone(&doneWriting, this);
+    return false;
   }
-}
 
-void yadfs::YADFSClient::doneWriting(void *instance)
-{
-  YADFSClient *client = (YADFSClient *)instance;
-
-  pthread_mutex_lock(&client->m_mutex);
-  if (--client->m_waiting_count != 0)
-  {
-    cout << "done but not ready...\n";
-    pthread_mutex_unlock(&client->m_mutex);
-    return;
-  }
-  pthread_mutex_unlock(&client->m_mutex);
-  cout << "done and ready!\n";
-
+  // Wait until all job is done
+  it->second->stopAndWaitCompletition();
   
-  if (client->Connect() < 0)
+  if (Connect() < 0)
   {
-    return;
+    return false;
   }
 
   msg_req_handshake req_handshake;
   req_handshake.m_msg_id = MSG_REQ_SETSIZE;
-  if (!client->Write(&req_handshake, sizeof(msg_req_handshake)))
+  if (!Write(&req_handshake, sizeof(msg_req_handshake)))
   {
-    return;
+    return false;
   }
 
   msg_req_setsize req_setsize;
-  strcpy(req_setsize.m_path, client->m_path_to_release.c_str());
-  req_setsize.m_size = client->getSize(client->m_path_to_release);
+  strcpy(req_setsize.m_path, path);
+  req_setsize.m_size = getSize(path);
 
-  if (!client->Write(&req_setsize, sizeof (msg_req_setsize)))
+  if (!Write(&req_setsize, sizeof (msg_req_setsize)))
   {
-    return;
+    return false;
   }
 
   msg_res_setsize res_setsize;
-  if (!client->Read(&res_setsize, sizeof (msg_res_setsize)))
+  if (!Read(&res_setsize, sizeof (msg_res_setsize)))
   {
-    return;
+    return false;
   }
 
-  client->Close();
+  Close();
 
-//  if (!res_setsize.m_ok)
-//  {
-//    return;
-//  }
+  if (!res_setsize.m_ok)
+  {
+    return false;
+  }
 
   // Clears the size entry for this path
-  client->remSize(client->m_path_to_release);
+  client->remSize(path);
 
-  return;
+  return true;
 }
-
-
 
 // -----------------------------------------------------------------------
 // C Functions
 // -----------------------------------------------------------------------
-
 void write_func(void *data)
 {
   JobData *dt = (JobData *)data;
 
+  cout << "Writting to node...\n";
+  /*
   if (!dt->m_node_client->Connect())
   {
     return;
   }
   dt->m_node_client->Close();
-  
+
+   *
+  */
+
   delete dt;
 }
 

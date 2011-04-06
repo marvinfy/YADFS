@@ -8,10 +8,12 @@
 #include "worker.hpp"
 #include "job.hpp"
 
-yadfs::Worker::Worker() : m_running(true), m_work_done(NULL)
+yadfs::Worker::Worker() : m_stopping(false), m_waiting(false)
 {
-  pthread_mutex_init(&m_mutex, NULL);
-  pthread_cond_init(&m_cond, NULL);
+  pthread_mutex_init(&m_mutex_work, NULL);
+  pthread_mutex_init(&m_mutex_finished, NULL);
+  pthread_cond_init(&m_cond_work, NULL);
+  pthread_cond_init(&m_cond_finished, NULL);
   pthread_create(&m_thread, NULL, &work, this);
 }
 
@@ -21,62 +23,112 @@ yadfs::Worker::Worker(const Worker& orig)
 
 yadfs::Worker::~Worker()
 {
+  stopAndWaitCompletition();
 }
 
 void *yadfs::Worker::work(void *data)
 {
-  Worker *worker = (Worker *) data;
+  Worker *worker = (Worker *)data;
 
-  while (worker->m_running)
+  while (true)
   {
-    pthread_mutex_lock(&worker->m_mutex);
+    pthread_mutex_lock(&worker->m_mutex_work);
+
     if (worker->m_queue.empty())
     {
-      if (worker->m_work_done)
+      // Wait until a job is added or worker is stopped
+      pthread_cond_wait(&worker->m_cond_work, &worker->m_mutex_work);
+
+      if (worker->m_stopping && worker->m_queue.empty())
       {
-        worker->m_work_done(worker->m_work_done_param);
-        worker->m_work_done = NULL;
-        worker->m_work_done_param = NULL;
+        if (worker->m_waiting)
+        {
+          pthread_mutex_lock(&worker->m_mutex_finished);
+          pthread_cond_signal(&worker->m_cond_finished);
+          pthread_mutex_unlock(&worker->m_mutex_finished);
+        }
+        
+        pthread_mutex_unlock(&worker->m_mutex_work);
+        break;
       }
-      pthread_cond_wait(&worker->m_cond, &worker->m_mutex);
     }
 
-    // Checking again because callbackWhenDone sends a signal and the queue
-    // could be empty
-    if (worker->m_queue.empty())
-    {
-      pthread_mutex_unlock(&worker->m_mutex);
-      continue;
-    }
-    
+    // Gets a job to work with
     Job *job = worker->m_queue.front();
     worker->m_queue.pop();
 
-    pthread_mutex_unlock(&worker->m_mutex);
+    // Releases the lock
+    pthread_mutex_unlock(&worker->m_mutex_work);
 
+    // Execute the job and then deletes it
     job->execute();
     delete job;
   }
 }
 
-void yadfs::Worker::addJob(Job *job)
+bool yadfs::Worker::addJob(Job *job)
 {
-  pthread_mutex_lock(&m_mutex);
-  m_queue.push(job);
-  pthread_cond_signal(&m_cond);
-  pthread_mutex_unlock(&m_mutex);
+  bool added = false;
+  
+  pthread_mutex_lock(&m_mutex_work);
+  if (!m_stopping)
+  {
+    m_queue.push(job);
+    pthread_cond_signal(&m_cond_work);
+    added = true;
+  }
+  pthread_mutex_unlock(&m_mutex_work);
+
+  return added;
 }
 
-void yadfs::Worker::callbackWhenDone(void (*work_done)(void*), void *param)
+void yadfs::Worker::stopWhenComplete()
 {
-  pthread_mutex_lock(&m_mutex);
-  m_work_done = work_done;
-  m_work_done_param = param;
-  pthread_cond_signal(&m_cond);
-  pthread_mutex_unlock(&m_mutex);
+  pthread_mutex_lock(&m_mutex_work);
+
+  if (m_stopping)
+  {
+    pthread_mutex_unlock(&m_mutex_work);
+    return;
+  }
+
+  // Just to prevent further jobs to be added
+  m_stopping = true;
+  pthread_cond_signal(&m_cond_work);
+  pthread_mutex_unlock(&m_mutex_work);
 }
 
-void yadfs::Worker::stop()
+void yadfs::Worker::stopAndWaitCompletition()
 {
-  m_running = false;
+  pthread_mutex_lock(&m_mutex_work);
+  
+  if (m_stopping)
+  {
+    pthread_mutex_unlock(&m_mutex_work);
+    return;
+  }
+
+  m_stopping = true;
+  m_waiting = true;
+
+    pthread_mutex_lock(&m_mutex_finished);
+
+  // if (worker->m_queue.empty()) 
+  pthread_cond_signal(&m_cond_work);
+  pthread_mutex_unlock(&m_mutex_work);
+
+    pthread_cond_wait(&m_cond_finished, &m_mutex_finished);
+    pthread_mutex_unlock(&m_mutex_finished);
+
+
+//  pthread_mutex_lock(&m_mutex_work);
+//  m_stopping = true;
+//  m_waiting = true;
+//  pthread_cond_signal(&m_cond_work);
+//  pthread_mutex_lock(&m_mutex_finished);
+//  pthread_mutex_unlock(&m_mutex_work);
+//  pthread_cond_wait(&m_cond_finished, &m_mutex_finished);
+//  pthread_mutex_unlock(&m_mutex_finished);
+
+  return;
 }

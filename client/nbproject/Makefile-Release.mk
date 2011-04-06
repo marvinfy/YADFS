@@ -33,6 +33,7 @@ OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/worker_pool.o \
 	${OBJECTDIR}/job.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/yadfs_client.o \
@@ -62,6 +63,11 @@ LDLIBSOPTIONS=
 dist/Release/GNU-Linux-x86/client: ${OBJECTFILES}
 	${MKDIR} -p dist/Release/GNU-Linux-x86
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/client ${OBJECTFILES} ${LDLIBSOPTIONS} 
+
+${OBJECTDIR}/worker_pool.o: worker_pool.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/worker_pool.o worker_pool.cpp
 
 ${OBJECTDIR}/job.o: job.cpp 
 	${MKDIR} -p ${OBJECTDIR}
