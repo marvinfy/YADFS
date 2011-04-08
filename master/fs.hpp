@@ -35,6 +35,7 @@ public:
   FileSystemEntry *getEntry(const string& path);
   bool addEntry(const string& parentPath, FileSystemEntry *child);
   bool addEntry(FileSystemEntry *parent, FileSystemEntry *child);
+  static unsigned int getNextId();
 };
 
 }

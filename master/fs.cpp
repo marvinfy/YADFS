@@ -6,6 +6,10 @@
  */
 
 #include "fs.hpp"
+#include <pthread.h>
+
+static pthread_mutex_t mutex_next_id = PTHREAD_MUTEX_INITIALIZER;
+static unsigned int next_id = 0;
 
 yadfs::FileSystem::FileSystem()
 {
@@ -61,4 +65,15 @@ bool yadfs::FileSystem::addEntry(FileSystemEntry *parent, FileSystemEntry *child
   }
 
   return addEntry(parent->m_path, child);
+}
+
+unsigned int yadfs::FileSystem::getNextId()
+{
+  unsigned int ret;
+  
+  pthread_mutex_lock(&mutex_next_id);
+  ret = next_id++;
+  pthread_mutex_unlock(&mutex_next_id);
+
+  return ret;
 }

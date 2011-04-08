@@ -33,6 +33,7 @@ OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/node_server.o \
 	${OBJECTDIR}/main.o
 
 
@@ -59,6 +60,11 @@ LDLIBSOPTIONS=
 dist/Release/GNU-Linux-x86/data_node: ${OBJECTFILES}
 	${MKDIR} -p dist/Release/GNU-Linux-x86
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/data_node ${OBJECTFILES} ${LDLIBSOPTIONS} 
+
+${OBJECTDIR}/node_server.o: node_server.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/node_server.o node_server.cpp
 
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}

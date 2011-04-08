@@ -29,6 +29,7 @@ class FileSystemEntry
 {
   friend class FileSystem;
 private:
+  unsigned int m_id;
   string m_path;
   dirent m_dirent;
   struct stat m_stat;

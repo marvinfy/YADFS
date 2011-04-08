@@ -6,6 +6,7 @@
  */
 
 #include "fs_entry.hpp"
+#include "fs.hpp"
 
 yadfs::FileSystemEntry::FileSystemEntry()
 {
@@ -43,6 +44,8 @@ yadfs::FileSystemEntry::~FileSystemEntry()
 void yadfs::FileSystemEntry::init(FileSystemEntry *instance, ino_t ino,
                                   unsigned char type, const char *name)
 {
+  instance->m_id = FileSystem::getNextId();
+
   memset(&instance->m_dirent, 0, sizeof (dirent));
   instance->m_dirent.d_ino = ino;
   instance->m_dirent.d_type = type;

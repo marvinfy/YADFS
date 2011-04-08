@@ -6,6 +6,7 @@
  */
 
 #include "fuse.h"
+#include "../commons/utils.hpp"
 #include "yadfs_client.hpp"
 
 static int yadfs_getattr(const char *path, struct stat *stbuf)
@@ -65,11 +66,28 @@ static struct fuse_operations yadfs_operations = {
 
 int main(int argc, char* argv[])
 {
-  int ret;
+  int ret, nPort;
+  char host[128], port[8];
 
   //sleep(15);
 
-  ret = yadfs_client_init("localhost", 10005);
+  parse_argv(argc, argv);
+  
+  ret = get_parameter("master.host", host, 128);
+  if (ret == -1)
+  {
+    strcpy(host, "localhost");
+  }
+  
+  ret = get_parameter("master.port", port, 8);
+  if (ret == -1)
+  {
+    strcpy(port, "10005");
+  }
+
+  nPort = atoi(port);
+  
+  ret = yadfs_client_init(host, nPort);
   if (ret != 0)
   {
     return ret;

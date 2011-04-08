@@ -8,6 +8,9 @@
 #include "worker.hpp"
 #include "job.hpp"
 
+#include "../commons/logging.hpp"
+using yadfs::Logging;
+
 yadfs::Worker::Worker() : m_stopping(false), m_waiting(false)
 {
   pthread_mutex_init(&m_mutex_work, NULL);
@@ -36,7 +39,7 @@ void *yadfs::Worker::work(void *data)
 
     if (worker->m_queue.empty())
     {
-      // Wait until a job is added or worker is stopped
+      // Wait until a job is added or the worker is stopped
       pthread_cond_wait(&worker->m_cond_work, &worker->m_mutex_work);
 
       if (worker->m_stopping && worker->m_queue.empty())
@@ -102,33 +105,61 @@ void yadfs::Worker::stopAndWaitCompletition()
 {
   pthread_mutex_lock(&m_mutex_work);
   
-  if (m_stopping)
-  {
-    pthread_mutex_unlock(&m_mutex_work);
-    return;
-  }
-
   m_stopping = true;
   m_waiting = true;
-
+  
     pthread_mutex_lock(&m_mutex_finished);
 
-  // if (worker->m_queue.empty()) 
   pthread_cond_signal(&m_cond_work);
   pthread_mutex_unlock(&m_mutex_work);
 
     pthread_cond_wait(&m_cond_finished, &m_mutex_finished);
     pthread_mutex_unlock(&m_mutex_finished);
 
-
-//  pthread_mutex_lock(&m_mutex_work);
-//  m_stopping = true;
-//  m_waiting = true;
-//  pthread_cond_signal(&m_cond_work);
-//  pthread_mutex_lock(&m_mutex_finished);
-//  pthread_mutex_unlock(&m_mutex_work);
-//  pthread_cond_wait(&m_cond_finished, &m_mutex_finished);
-//  pthread_mutex_unlock(&m_mutex_finished);
-
   return;
 }
+
+
+
+
+//void yadfs::Worker::stopAndWaitCompletition()
+//{
+//
+//  Logging::log(Logging::INFO, "[stopAnd]trying to lock m_mutex_work");
+//  pthread_mutex_lock(&m_mutex_work);
+//
+//  if (m_stopping)
+//  {
+//
+//    Logging::log(Logging::INFO, "[stopAnd]Already stopping");
+//    pthread_mutex_unlock(&m_mutex_work);
+//    Logging::log(Logging::INFO, "[stopAnd]so exiting");
+//    return;
+//  }
+//
+//  m_stopping = true;
+//  m_waiting = true;
+//
+//
+//    Logging::log(Logging::INFO, "[stopAnd]Trying to lock m_mutex_finished");
+//    pthread_mutex_lock(&m_mutex_finished);
+//    Logging::log(Logging::INFO, "[stopAnd]Lock m_mutex_finished is mine");
+//
+//  // if (worker->m_queue.empty())
+//  pthread_cond_signal(&m_cond_work);
+//  pthread_mutex_unlock(&m_mutex_work);
+//
+//    pthread_cond_wait(&m_cond_finished, &m_mutex_finished);
+//    pthread_mutex_unlock(&m_mutex_finished);
+//
+////  pthread_mutex_lock(&m_mutex_work);
+////  m_stopping = true;
+////  m_waiting = true;
+////  pthread_cond_signal(&m_cond_work);
+////  pthread_mutex_lock(&m_mutex_finished);
+////  pthread_mutex_unlock(&m_mutex_work);
+////  pthread_cond_wait(&m_cond_finished, &m_mutex_finished);
+////  pthread_mutex_unlock(&m_mutex_finished);
+//
+//  return;
+//}

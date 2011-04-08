@@ -36,7 +36,11 @@ enum msgs
   MSG_RES_OPEN,
   MSG_REQ_SERVERCONFIG,
   MSG_REQ_GETSIZE,
-  MSG_REQ_SETSIZE
+  MSG_REQ_SETSIZE,
+  MSG_REQ_DELALL,
+  MSG_RES_DELALL,
+  MSG_REQ_ADDCHUNK,
+  MSG_RES_ADDCHUNK
 };
 
 typedef struct _msg_req_handshake {
@@ -143,5 +147,23 @@ typedef struct _msg_req_setsize {
 typedef struct _msg_res_setsize {
   boolean m_ok;
 } msg_res_setsize;
+
+typedef struct _msg_req_delall {
+} msg_req_delall;
+
+typedef struct _msg_res_delall {
+  boolean m_ok;
+} msg_res_delall;
+
+typedef struct _msg_req_addchunk {
+  unsigned int m_file_id;
+  unsigned int m_chunk_id;
+  // data
+} msg_req_addchunk;
+
+typedef struct _msg_res_addchunk {
+  boolean m_ok;
+} msg_res_addchunk;
+
 
 #endif	/* MESSAGES_HPP */

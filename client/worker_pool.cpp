@@ -8,6 +8,9 @@
 #include "worker_pool.hpp"
 #include "worker.hpp"
 
+#include "../commons/logging.hpp"
+using yadfs::Logging;
+
 yadfs::WorkerPool::WorkerPool(unsigned int workers)
 {
   for (int i = 0; i < workers; i++)
@@ -49,9 +52,11 @@ void yadfs::WorkerPool::stopWhenComplete()
 
 void yadfs::WorkerPool::stopAndWaitCompletition()
 {
+  Logging::log(Logging::INFO, "Stopping workers");
   for (int i = 0; i < m_workers.size(); i++)
   {
     m_workers[i]->stopAndWaitCompletition();
   }
+  Logging::log(Logging::INFO, "Workers stopped");
 }
 

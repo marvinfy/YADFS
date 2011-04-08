@@ -12,6 +12,7 @@
       <itemPath>messages.hpp</itemPath>
       <itemPath>raid_mode.h</itemPath>
       <itemPath>server.hpp</itemPath>
+      <itemPath>utils.hpp</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -25,6 +26,7 @@
       <itemPath>client.cpp</itemPath>
       <itemPath>logging.cpp</itemPath>
       <itemPath>server.cpp</itemPath>
+      <itemPath>utils.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"

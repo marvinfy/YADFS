@@ -93,6 +93,8 @@ bool yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,
     int worker_id = chunk_id % m_nodeCount;
 
     JobData *data = new JobData();
+    data->m_chunk_id = chunk_id;
+    data->m_file_id = 100;
     memcpy(data->m_data, buf, size);
     data->m_size = size;
     data->m_node_client = m_node_clients[worker_id];
@@ -176,16 +178,39 @@ void write_func(void *data)
 {
   JobData *dt = (JobData *)data;
 
-  cout << "Writting to node...\n";
-  /*
   if (!dt->m_node_client->Connect())
   {
     return;
   }
-  dt->m_node_client->Close();
 
-   *
-  */
+  msg_req_handshake req_handshake;
+  req_handshake.m_msg_id = MSG_REQ_ADDCHUNK;
+  if (!dt->m_node_client->Write(&req_handshake, sizeof(msg_req_handshake)))
+  {
+    return;
+  }
+
+  msg_req_addchunk req_addchunk;
+  req_addchunk.m_file_id = dt->m_file_id;
+  req_addchunk.m_chunk_id = dt->m_chunk_id;
+  if (!dt->m_node_client->Write(&req_addchunk, sizeof(msg_req_addchunk)))
+  {
+    return;
+  }
+
+  msg_res_addchunk res_addchunk;
+  if (!dt->m_node_client->Read(&req_addchunk, sizeof(msg_res_addchunk)))
+  {
+    return;
+  }
+
+  if (!res_addchunk.m_ok)
+  {
+    //Logging::log(Logging::ERROR, "Error adding chunk");
+    return;
+  }
+ 
+  dt->m_node_client->Close();
 
   delete dt;
 }
