@@ -9,6 +9,7 @@
 #define	WORKER_POOL_HPP
 
 #include <vector>
+#include <pthread.h>
 
 using std::vector;
 
@@ -21,14 +22,18 @@ class WorkerPool
 {
 private:
   vector<Worker *> m_workers;
+  pthread_mutex_t m_mutex;
+  pthread_cond_t m_cond;
+  int m_remaining;
+
+  static void workerDone(void *instance);
 public:
   WorkerPool(unsigned int workers);
   WorkerPool(const WorkerPool& orig);
   virtual ~WorkerPool();
   unsigned int getWorkersCount();
   bool addJob(unsigned int workerId, Job *job);
-  void stopWhenComplete();
-  void stopAndWaitCompletition();
+  void stop();
 };
 }
 #endif	/* WORKER_POOL_HPP */

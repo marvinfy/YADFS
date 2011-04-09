@@ -21,13 +21,14 @@ class Worker
 {
 private:
   pthread_mutex_t m_mutex_work;
-  pthread_mutex_t m_mutex_finished;
   pthread_cond_t m_cond_work;
-  pthread_cond_t m_cond_finished;
   pthread_t m_thread;
+  
   queue<Job *> m_queue;
   bool m_stopping;
-  bool m_waiting;
+
+  void (*m_done)(void *);
+  void *m_data;
 
   static void *work(void *data);
 public:
@@ -35,8 +36,7 @@ public:
   Worker(const Worker& orig);
   virtual ~Worker();
   bool addJob(Job *job);
-  void stopWhenComplete();
-  void stopAndWaitCompletition();
+  void stopAndCallbackWhenDone(void (*done)(void *), void *data);
 };
 
 }

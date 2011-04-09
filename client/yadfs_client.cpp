@@ -4,6 +4,7 @@
 #include "worker.hpp"
 #include "worker_pool.hpp"
 #include "../commons/chunk.h"
+#include "../commons/logging.hpp"
 #include "../commons/messages.hpp"
 
 #include <iostream>
@@ -16,6 +17,7 @@ using std::string;
 using yadfs::ClientConfig;
 using yadfs::YADFSClient;
 using yadfs::JobData;
+using yadfs::Logging;
 
 ClientConfig *config = NULL;
 static YADFSClient *client = NULL;
@@ -129,8 +131,10 @@ bool yadfs::YADFSClient::releaseWrite(const char *path)
   }
 
   // Wait until all job is done
-  it->second->stopAndWaitCompletition();
-  
+  Logging::log(Logging::INFO, "[YADFSClient::releaseWrite]Waiting complete stop...");
+  it->second->stop();
+  Logging::log(Logging::INFO, "[YADFSClient::releaseWrite]Stopped");
+    
   if (Connect() < 0)
   {
     return false;

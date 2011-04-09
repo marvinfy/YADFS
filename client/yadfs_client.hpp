@@ -21,6 +21,7 @@
 
 #include <map>
 #include <vector>
+#include <pthread.h>
 
 using std::map;
 using std::pair;
@@ -49,6 +50,9 @@ private:
   
   sizes_map m_sizes;
   Mode m_mode;
+
+  pthread_mutex_t m_mutex;
+  pthread_cond_t m_cond;
 
   // int m_waiting_count;
   // string m_path_to_release;
