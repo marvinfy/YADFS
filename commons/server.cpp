@@ -89,7 +89,7 @@ int yadfs::Server::Start()
   while (m_running)
   {
     int sockfd = accept(m_sockfd, (sockaddr *) &cli_addr, (socklen_t *) &len);
-    if(sockfd < 0)
+    if (sockfd < 0)
     {
       Logging::log(Logging::ERROR, "Accept error.");
       continue;
@@ -98,7 +98,15 @@ int yadfs::Server::Start()
     receive_data *rd = new receive_data;
     rd->m_server = this;
     rd->m_sockfd = sockfd;
-    pthread_create(&thread, NULL, yadfs::Server::Receive, (void *)rd);
+
+    if (m_config.m_mode == MULTI_THREADED)
+    {
+      pthread_create(&thread, NULL, yadfs::Server::Receive, (void *)rd);
+    }
+    else // SINGLE_THREADED
+    {
+      yadfs::Server::Receive((void *)rd);
+    }
   }
 
   return 0;

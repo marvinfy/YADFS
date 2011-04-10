@@ -203,15 +203,14 @@ void write_func(void *data)
   }
 
   msg_res_addchunk res_addchunk;
-  if (!dt->m_node_client->Read(&req_addchunk, sizeof(msg_res_addchunk)))
+  if (!dt->m_node_client->Read(&res_addchunk, sizeof(msg_res_addchunk)))
   {
     return;
   }
 
   if (!res_addchunk.m_ok)
   {
-    //Logging::log(Logging::ERROR, "Error adding chunk");
-    return;
+    Logging::log(Logging::ERROR, "Error adding chunk");
   }
  
   dt->m_node_client->Close();

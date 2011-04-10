@@ -42,9 +42,9 @@ void yadfs::MasterServer::registerDataNode(const DataNode& node)
 void *yadfs::MasterServer::Receive(int sockfd)
 {
   msg_req_handshake msg_hs;
-  if (!Read(sockfd, &msg_hs, sizeof(msg_req_handshake)))
+  if (!Read(sockfd, &msg_hs, sizeof (msg_req_handshake)))
   {
-    return NULL;
+    goto cleanup;
   }
 
   switch (msg_hs.m_msg_id)
@@ -52,15 +52,15 @@ void *yadfs::MasterServer::Receive(int sockfd)
   case MSG_REQ_ECHO:
   {
     msg_req_echo req;
-    if (!Read(sockfd, &req, sizeof(msg_req_echo)))
+    if (!Read(sockfd, &req, sizeof (msg_req_echo)))
     {
-      return NULL;
+      goto cleanup;
     }
 
     char *msg = new char[req.m_len];
     if (!Read(sockfd, msg, req.m_len))
     {
-      return NULL;
+      goto cleanup;
     }
 
     printf("%s", msg);
@@ -71,9 +71,9 @@ void *yadfs::MasterServer::Receive(int sockfd)
   case MSG_REQ_SHUTDOWN:
   {
     msg_req_shutdown req;
-    if (!Read(sockfd, &req, sizeof(msg_req_shutdown)))
+    if (!Read(sockfd, &req, sizeof (msg_req_shutdown)))
     {
-      return NULL;
+      goto cleanup;
     }
 
     msg_res_shutdown res;
@@ -86,9 +86,9 @@ void *yadfs::MasterServer::Receive(int sockfd)
     {
       res.m_ok = false;
     }
-    if (!Write(sockfd, &res, sizeof(msg_res_shutdown)))
+    if (!Write(sockfd, &res, sizeof (msg_res_shutdown)))
     {
-      return NULL;
+      goto cleanup;
     }
 
     if (res.m_ok)
@@ -103,9 +103,9 @@ void *yadfs::MasterServer::Receive(int sockfd)
   case MSG_REQ_GETATTR:
   {
     msg_req_getattr req;
-    if (!Read(sockfd, &req, sizeof(msg_req_getattr)))
+    if (!Read(sockfd, &req, sizeof (msg_req_getattr)))
     {
-      return NULL;
+      goto cleanup;
     }
 
     // Gets the entry for this path
@@ -113,7 +113,7 @@ void *yadfs::MasterServer::Receive(int sockfd)
     FileSystemEntry *entry = m_fs.getEntry(path);
 
     msg_res_getattr res;
-    memset(&res, 0, sizeof(msg_res_getattr));
+    memset(&res, 0, sizeof (msg_res_getattr));
     if (entry == NULL)
     {
       res.m_err = -ENOENT;
@@ -121,11 +121,11 @@ void *yadfs::MasterServer::Receive(int sockfd)
     else
     {
       res.m_err = 0;
-      memcpy(&res.m_stat, entry->getStat(), sizeof(struct stat));
+      memcpy(&res.m_stat, entry->getStat(), sizeof (struct stat));
     }
-    if (!Write(sockfd, &res, sizeof(msg_res_getattr)))
+    if (!Write(sockfd, &res, sizeof (msg_res_getattr)))
     {
-      return NULL;
+      goto cleanup;
     }
 
     break;
@@ -134,9 +134,9 @@ void *yadfs::MasterServer::Receive(int sockfd)
   {
     // Reads the path of the requested dir
     msg_req_readdir req_readdir;
-    if (!Read(sockfd, &req_readdir, sizeof(msg_req_readdir)))
+    if (!Read(sockfd, &req_readdir, sizeof (msg_req_readdir)))
     {
-      return NULL;
+      goto cleanup;
     }
 
     // Gets the entry for this path
@@ -160,13 +160,13 @@ void *yadfs::MasterServer::Receive(int sockfd)
     {
       res_readdir.m_children_count = -ENOENT;
     }
-    if (!Write(sockfd, &res_readdir, sizeof(msg_res_readdir)))
+    if (!Write(sockfd, &res_readdir, sizeof (msg_res_readdir)))
     {
-      return NULL;
+      goto cleanup;
     }
     if (res_readdir.m_children_count < 0)
     {
-      return NULL;
+      goto cleanup;
     }
 
     // Writes each entry back to client
@@ -177,14 +177,14 @@ void *yadfs::MasterServer::Receive(int sockfd)
       child = dir->getChild(i);
       if (child == NULL)
       {
-        return NULL;
+        goto cleanup;
       }
 
-      memset(&res_dirent, 0, sizeof(msg_res_dirent));
-      memcpy(&res_dirent.m_dirent, child->getDirent(), sizeof(dirent));
-      if (!Write(sockfd, &res_dirent, sizeof(msg_res_dirent)))
+      memset(&res_dirent, 0, sizeof (msg_res_dirent));
+      memcpy(&res_dirent.m_dirent, child->getDirent(), sizeof (dirent));
+      if (!Write(sockfd, &res_dirent, sizeof (msg_res_dirent)))
       {
-        return NULL;
+        goto cleanup;
       }
     }
 
@@ -193,9 +193,9 @@ void *yadfs::MasterServer::Receive(int sockfd)
   case MSG_REQ_MKNOD:
   {
     msg_req_mknod req_mknod;
-    if (!Read(sockfd, &req_mknod, sizeof(msg_req_mknod)))
+    if (!Read(sockfd, &req_mknod, sizeof (msg_req_mknod)))
     {
-      return NULL;
+      goto cleanup;
     }
 
     msg_res_mknod res_mknod;
@@ -244,18 +244,18 @@ void *yadfs::MasterServer::Receive(int sockfd)
       }
     }
 
-    if (!Write(sockfd, &res_mknod, sizeof(msg_res_mknod)))
+    if (!Write(sockfd, &res_mknod, sizeof (msg_res_mknod)))
     {
-      return NULL;
+      goto cleanup;
     }
     break;
   }
   case MSG_REQ_OPEN:
   {
     msg_req_open req_open;
-    if (!Read(sockfd, &req_open, sizeof(msg_req_open)))
+    if (!Read(sockfd, &req_open, sizeof (msg_req_open)))
     {
-      return NULL;
+      goto cleanup;
     }
 
     string path(req_open.m_path);
@@ -271,9 +271,9 @@ void *yadfs::MasterServer::Receive(int sockfd)
       res_open.m_err = -1;
     }
 
-    if (!Write(sockfd, &res_open, sizeof(msg_res_open)))
+    if (!Write(sockfd, &res_open, sizeof (msg_res_open)))
     {
-      return NULL;
+      goto cleanup;
     }
 
     /*
@@ -292,32 +292,32 @@ void *yadfs::MasterServer::Receive(int sockfd)
     msg_res_serverconfig res_srvcfg;
     res_srvcfg.m_mode = m_mode;
     res_srvcfg.m_node_count = m_data_nodes.size();
-    if (!Write(sockfd, &res_srvcfg, sizeof(msg_res_serverconfig)))
+    if (!Write(sockfd, &res_srvcfg, sizeof (msg_res_serverconfig)))
     {
-      return NULL;
+      goto cleanup;
     }
 
     for (int i = 0; i < res_srvcfg.m_node_count; i++)
     {
       msg_res_datanode datanode;
-      
+
       DataNode node = m_data_nodes[i];
       strcpy(datanode.m_host, node.getHost()->c_str());
       datanode.m_port = node.getPort();
-      if (!Write(sockfd, &datanode, sizeof(msg_res_datanode)))
+      if (!Write(sockfd, &datanode, sizeof (msg_res_datanode)))
       {
-        return NULL;
+        goto cleanup;
       }
     }
-    
+
     break;
   }
   case MSG_REQ_GETSIZE:
   {
     msg_req_getsize req_getsize;
-    if (!Read(sockfd, &req_getsize, sizeof(msg_req_getsize)))
+    if (!Read(sockfd, &req_getsize, sizeof (msg_req_getsize)))
     {
-      return NULL;
+      goto cleanup;
     }
 
     string path(req_getsize.m_path);
@@ -335,9 +335,9 @@ void *yadfs::MasterServer::Receive(int sockfd)
       res_getsize.m_size = 0;
     }
 
-    if (!Write(sockfd, &res_getsize, sizeof(msg_res_getsize)))
+    if (!Write(sockfd, &res_getsize, sizeof (msg_res_getsize)))
     {
-      return NULL;
+      goto cleanup;
     }
 
     break;
@@ -345,9 +345,9 @@ void *yadfs::MasterServer::Receive(int sockfd)
   case MSG_REQ_SETSIZE:
   {
     msg_req_setsize req_setsize;
-    if (!Read(sockfd, &req_setsize, sizeof(msg_req_setsize)))
+    if (!Read(sockfd, &req_setsize, sizeof (msg_req_setsize)))
     {
-      return NULL;
+      goto cleanup;
     }
 
     msg_res_setsize res_setsize;
@@ -363,9 +363,9 @@ void *yadfs::MasterServer::Receive(int sockfd)
       res_setsize.m_ok = false;
     }
 
-    if (!Write(sockfd, &res_setsize, sizeof(msg_res_setsize)))
+    if (!Write(sockfd, &res_setsize, sizeof (msg_res_setsize)))
     {
-      return NULL;
+      goto cleanup;
     }
 
     break;
@@ -373,6 +373,9 @@ void *yadfs::MasterServer::Receive(int sockfd)
 
   }
 
+cleanup:
+
+  close(sockfd);
   return NULL;
 }
 

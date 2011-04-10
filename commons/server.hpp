@@ -11,11 +11,18 @@
 namespace yadfs
 {
 
+enum ServerMode
+{
+  SINGLE_THREADED,
+  MULTI_THREADED
+};
+
 class ServerConfig
 {
 public:
   int m_port;
   unsigned int m_retries;
+  ServerMode m_mode;
   char *m_user;
   char *m_pass;
   
@@ -23,13 +30,15 @@ public:
   {
     m_port = 10000;
     m_retries = 10;
+    m_mode = MULTI_THREADED;
   }
 
-  ServerConfig(int port, int retries) :
+  ServerConfig(int port, int retries, ServerMode mode) :
   m_port(port),
   m_retries(retries),
   m_user("root"),
-  m_pass("manager")
+  m_pass("manager"),
+  m_mode(mode)
   {
   }
 };

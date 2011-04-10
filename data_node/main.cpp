@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
   
   Logging::log(Logging::INFO, "Data Node is about to start on port %d", nPort);
   
-  ServerConfig config(nPort, nRetries);
+  ServerConfig config(nPort, nRetries, yadfs::SINGLE_THREADED);
   NodeServer server(config);
   server.Start();
 
