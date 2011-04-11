@@ -44,6 +44,7 @@ public:
   FileSystemEntry(ino_t ino, unsigned char type, const char *name);
   FileSystemEntry(const FileSystemEntry& orig);
   virtual ~FileSystemEntry();
+  unsigned int getId();
   dirent *getDirent();
   struct stat *getStat();
   off_t getSize();

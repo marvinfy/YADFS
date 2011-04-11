@@ -19,6 +19,7 @@
 #include "../commons/chunk.h"
 #include "../commons/client.hpp"
 
+#include <assert.h>
 #include <map>
 #include <vector>
 #include <pthread.h>
@@ -31,13 +32,30 @@ using std::vector;
 namespace yadfs
 {
 
-typedef map<string, size_t> sizes_map;
-typedef sizes_map::iterator sizes_it;
-typedef pair<string, size_t> sizes_pair;
+class YADFSClient;
+class FileSystemEntry;
+
+typedef map<string, FileSystemEntry *> entries_map;
+typedef entries_map::iterator entries_it;
+typedef pair<string, FileSystemEntry *> entries_pair;
 
 typedef map<string, WorkerPool *> workers_map;
 typedef workers_map::iterator workers_it;
 typedef pair<string, WorkerPool *> workers_pair;
+
+class FileSystemEntry
+{
+  friend class YADFSClient;
+private:
+  string m_path;
+  size_t m_size;
+  unsigned int m_id;
+public:
+
+  FileSystemEntry() : m_size(0)
+  {
+  }
+};
 
 class YADFSClient : public Client
 {
@@ -47,8 +65,8 @@ private:
   // vector<Worker *> m_workers;
   workers_map m_workers;
   vector<Client *> m_node_clients;
-  
-  sizes_map m_sizes;
+
+  entries_map m_entries;
   Mode m_mode;
 
   pthread_mutex_t m_mutex;
@@ -64,42 +82,10 @@ public:
   virtual ~YADFSClient();
   bool init();
   bool enqueueWrite(const char *path, const char *buf, size_t size,
-    off_t offset);
+                    off_t offset);
   bool releaseWrite(const char *path);
-
-  void incSize(const string& path, size_t size)
-  {
-    sizes_it it = m_sizes.find(path);
-    if (it == m_sizes.end())
-    {
-      sizes_pair p;
-      p.first = path;
-      p.second = size;
-      m_sizes.insert(p);
-      return;
-    }
-    it->second += size;
-  }
-
-  size_t getSize(const string& path)
-  {
-    sizes_it it = m_sizes.find(path);
-    if (it == m_sizes.end())
-    {
-      return 0;
-    }
-    return it->second;
-  }
-
-  void remSize(const string& path)
-  {
-    sizes_it it = m_sizes.find(path);
-    if (it == m_sizes.end())
-    {
-      return;
-    }
-    m_sizes.erase(it);
-  }
+  FileSystemEntry *getEntry(const string& path);
+  void removeEntry(const string& path);
 
 };
 

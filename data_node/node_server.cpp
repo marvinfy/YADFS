@@ -8,12 +8,16 @@
 #include "node_server.hpp"
 
 #include "../commons/messages.hpp"
+#include <assert.h>
+#include <stdio.h>
 
 #include <iostream>
-using std::cout;
+using std::string;
 
 yadfs::NodeServer::NodeServer(const ServerConfig& config) : Server(config)
 {
+  m_dir = opendir("data");
+  assert(m_dir);
 }
 
 yadfs::NodeServer::NodeServer(const NodeServer& orig) : Server(orig)
@@ -22,6 +26,27 @@ yadfs::NodeServer::NodeServer(const NodeServer& orig) : Server(orig)
 
 yadfs::NodeServer::~NodeServer()
 {
+}
+
+int yadfs::NodeServer::writeFile(unsigned int fileId, unsigned int chunkId,
+                                 const char *data, size_t size)
+{
+  FILE *fd;
+  char name[64];
+
+  sprintf(name, "data/%08d_%016d.bin", fileId, chunkId);
+  fd = fopen(name, "w");
+
+  fwrite(data, 1, size, fd);
+  fclose(fd);
+
+  return 0;
+}
+
+int yadfs::NodeServer::readFile(unsigned int fileId, unsigned int chunkId,
+                                const char *data, size_t size)
+{
+  return 0;
 }
 
 void *yadfs::NodeServer::Receive(int sockfd)
@@ -59,10 +84,23 @@ void *yadfs::NodeServer::Receive(int sockfd)
       goto cleanup;
     }
 
-    cout << req_addchunk.m_file_id << " " << req_addchunk.m_chunk_id << "\n";
+    msg_req_addchunk_data req_addchunk_data;
+    if (!Read(sockfd, &req_addchunk_data, sizeof (msg_req_addchunk_data)))
+    {
+      goto cleanup;
+    }
 
     msg_res_addchunk res_addchunk;
-    res_addchunk.m_ok = true;
+    if (writeFile(req_addchunk.m_file_id, req_addchunk.m_chunk_id,
+                  req_addchunk_data.m_data, req_addchunk.m_size) == 0)
+    {
+      res_addchunk.m_ok = true;
+    }
+    else
+    {
+      res_addchunk.m_ok = false;
+    }
+
     if (!Write(sockfd, &res_addchunk, sizeof (msg_res_addchunk)))
     {
       goto cleanup;
@@ -70,7 +108,7 @@ void *yadfs::NodeServer::Receive(int sockfd)
   }
 
   }
-  
+
 cleanup:
   close(sockfd);
   return NULL;

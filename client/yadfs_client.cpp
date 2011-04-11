@@ -76,14 +76,49 @@ bool yadfs::YADFSClient::init()
 }
 
 bool yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,
-  size_t size, off_t offset)
+                                      size_t size, off_t offset)
 {
+  FileSystemEntry *entry = getEntry(path);
+
   if (offset == 0)
   {
     workers_pair pair;
     pair.first = path;
     pair.second = new WorkerPool(m_nodeCount);
     m_workers.insert(pair);
+
+    // Gets the id
+    if (Connect() < 0)
+    {
+      return false;
+    }
+
+    msg_req_handshake req_handshake;
+    req_handshake.m_msg_id = MSG_REQ_GETID;
+    if (!client->Write(&req_handshake, sizeof (msg_req_handshake)))
+    {
+      return false;
+    }
+
+    msg_req_getid req_getid;
+    strcpy(req_getid.m_path, path);
+    if (!client->Write(&req_getid, sizeof (msg_req_getid)))
+    {
+      return false;
+    }
+
+    msg_res_getid res_getid;
+    if (!client->Read(&res_getid, sizeof (msg_res_getid)))
+    {
+      return false;
+    }
+
+    if (!res_getid.m_ok)
+    {
+      return false;
+    }
+    
+    entry->m_id = res_getid.m_id;
   }
 
   // Calculates the id of the chunk
@@ -96,7 +131,7 @@ bool yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,
 
     JobData *data = new JobData();
     data->m_chunk_id = chunk_id;
-    data->m_file_id = 100;
+    data->m_file_id = entry->m_id;
     memcpy(data->m_data, buf, size);
     data->m_size = size;
     data->m_node_client = m_node_clients[worker_id];
@@ -118,7 +153,8 @@ bool yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,
   }
 
   // Increments the size of this path by size
-  client->incSize(path, size);
+  entry->m_size += size;
+
   return true;
 }
 
@@ -131,10 +167,10 @@ bool yadfs::YADFSClient::releaseWrite(const char *path)
   }
 
   // Wait until all job is done
-  Logging::log(Logging::INFO, "[YADFSClient::releaseWrite]Waiting complete stop...");
+  Logging::log(Logging::INFO, "[YADFSClient::releaseWrite]Stopping...");
   it->second->stop();
   Logging::log(Logging::INFO, "[YADFSClient::releaseWrite]Stopped");
-    
+
   if (Connect() < 0)
   {
     return false;
@@ -142,14 +178,14 @@ bool yadfs::YADFSClient::releaseWrite(const char *path)
 
   msg_req_handshake req_handshake;
   req_handshake.m_msg_id = MSG_REQ_SETSIZE;
-  if (!Write(&req_handshake, sizeof(msg_req_handshake)))
+  if (!Write(&req_handshake, sizeof (msg_req_handshake)))
   {
     return false;
   }
 
   msg_req_setsize req_setsize;
   strcpy(req_setsize.m_path, path);
-  req_setsize.m_size = getSize(path);
+  req_setsize.m_size = getEntry(path)->m_size;
 
   if (!Write(&req_setsize, sizeof (msg_req_setsize)))
   {
@@ -169,18 +205,43 @@ bool yadfs::YADFSClient::releaseWrite(const char *path)
     return false;
   }
 
-  // Clears the size entry for this path
-  client->remSize(path);
+  // Removes the entry for this path
+  client->removeEntry(path);
 
   return true;
+}
+
+yadfs::FileSystemEntry *yadfs::YADFSClient::getEntry(const string& path)
+{
+  entries_it it = m_entries.find(path);
+  if (it == m_entries.end())
+  {
+    entries_pair p;
+    p.first = path;
+    p.second = new FileSystemEntry();
+    m_entries.insert(p);
+    return p.second;
+  }
+  return it->second;
+}
+
+void yadfs::YADFSClient::removeEntry(const string& path)
+{
+  entries_it it = m_entries.find(path);
+  if (it == m_entries.end())
+  {
+    return;
+  }
+  m_entries.erase(it);
 }
 
 // -----------------------------------------------------------------------
 // C Functions
 // -----------------------------------------------------------------------
+
 void write_func(void *data)
 {
-  JobData *dt = (JobData *)data;
+  JobData *dt = (JobData *) data;
 
   if (!dt->m_node_client->Connect())
   {
@@ -189,7 +250,7 @@ void write_func(void *data)
 
   msg_req_handshake req_handshake;
   req_handshake.m_msg_id = MSG_REQ_ADDCHUNK;
-  if (!dt->m_node_client->Write(&req_handshake, sizeof(msg_req_handshake)))
+  if (!dt->m_node_client->Write(&req_handshake, sizeof (msg_req_handshake)))
   {
     return;
   }
@@ -197,13 +258,19 @@ void write_func(void *data)
   msg_req_addchunk req_addchunk;
   req_addchunk.m_file_id = dt->m_file_id;
   req_addchunk.m_chunk_id = dt->m_chunk_id;
-  if (!dt->m_node_client->Write(&req_addchunk, sizeof(msg_req_addchunk)))
+  req_addchunk.m_size = dt->m_size;
+  if (!dt->m_node_client->Write(&req_addchunk, sizeof (msg_req_addchunk)))
+  {
+    return;
+  }
+
+  if (!dt->m_node_client->Write(&dt->m_data, sizeof (msg_req_addchunk_data)))
   {
     return;
   }
 
   msg_res_addchunk res_addchunk;
-  if (!dt->m_node_client->Read(&res_addchunk, sizeof(msg_res_addchunk)))
+  if (!dt->m_node_client->Read(&res_addchunk, sizeof (msg_res_addchunk)))
   {
     return;
   }
@@ -212,7 +279,7 @@ void write_func(void *data)
   {
     Logging::log(Logging::ERROR, "Error adding chunk");
   }
- 
+
   dt->m_node_client->Close();
 
   delete dt;
@@ -440,7 +507,6 @@ int yadfs_write_real(const char *path, const char *buf, size_t size,
   client->enqueueWrite(path, buf, size, offset);
   return size;
 }
-
 
 int yadfs_read_real(const char *path, char *buf, size_t size, off_t offset,
                     struct fuse_file_info *fi)

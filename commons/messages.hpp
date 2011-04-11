@@ -9,6 +9,7 @@
 #define	MESSAGES_HPP
 
 #include "raid_mode.h"
+#include "chunk.h"
 
 #include <dirent.h>
 #include <sys/stat.h>
@@ -40,7 +41,9 @@ enum msgs
   MSG_REQ_DELALL,
   MSG_RES_DELALL,
   MSG_REQ_ADDCHUNK,
-  MSG_RES_ADDCHUNK
+  MSG_RES_ADDCHUNK,
+  MSG_REQ_GETID,
+  MSG_RES_GETID
 };
 
 typedef struct _msg_req_handshake {
@@ -158,12 +161,24 @@ typedef struct _msg_res_delall {
 typedef struct _msg_req_addchunk {
   unsigned int m_file_id;
   unsigned int m_chunk_id;
-  // data
+  size_t m_size;
 } msg_req_addchunk;
+
+typedef struct _msg_req_addchunk_data {
+  char m_data[CHUNK_SIZE];
+} msg_req_addchunk_data;
 
 typedef struct _msg_res_addchunk {
   boolean m_ok;
 } msg_res_addchunk;
 
+typedef struct _msg_req_getid {
+  char m_path[256];
+} msg_req_getid;
+
+typedef struct _msg_res_getid {
+  boolean m_ok;
+  unsigned int m_id;
+} msg_res_getid;
 
 #endif	/* MESSAGES_HPP */

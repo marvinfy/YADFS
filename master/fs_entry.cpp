@@ -69,6 +69,11 @@ void yadfs::FileSystemEntry::init(FileSystemEntry *instance, ino_t ino,
   instance->m_path = name;
 }
 
+unsigned int yadfs::FileSystemEntry::getId()
+{
+  return m_id;
+}
+
 dirent *yadfs::FileSystemEntry::getDirent()
 {
   return &m_dirent;

@@ -19,6 +19,8 @@ yadfs::FileSystem::FileSystem()
   root_pair.first = root->m_path;
   root_pair.second = root;
   m_entries.insert(root_pair);
+
+  next_id = 0;
 }
 
 yadfs::FileSystem::FileSystem(const FileSystem& orig)
