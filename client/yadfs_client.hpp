@@ -50,6 +50,8 @@ private:
   string m_path;
   size_t m_size;
   unsigned int m_id;
+  unsigned int m_chunk_count;
+  char **m_data;
 public:
 
   FileSystemEntry() : m_size(0)
@@ -71,16 +73,14 @@ private:
 
   pthread_mutex_t m_mutex;
   pthread_cond_t m_cond;
-
-  // int m_waiting_count;
-  // string m_path_to_release;
-  // pthread_mutex_t m_mutex;
+  int m_waitingFor;
 
   void releaseWrite(void *instance);
 public:
   YADFSClient(const ClientConfig& config);
   virtual ~YADFSClient();
   bool init();
+  int read(const char *path, char *buf, size_t size, off_t offset);
   bool enqueueWrite(const char *path, const char *buf, size_t size,
                     off_t offset);
   bool releaseWrite(const char *path);

@@ -11,6 +11,9 @@
 #include <string.h>
 #include <errno.h>
 #include <pthread.h>
+#include <assert.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 using std::cout;
 using std::string;
@@ -29,6 +32,9 @@ static YADFSClient *client = NULL;
 yadfs::YADFSClient::YADFSClient(const ClientConfig& config) : Client(config),
 m_nodeCount(0)
 {
+  pthread_mutex_init(&m_mutex, NULL);
+  pthread_cond_init(&m_cond, NULL);
+  m_waitingFor = -1;
 }
 
 yadfs::YADFSClient::~YADFSClient()
@@ -75,6 +81,191 @@ bool yadfs::YADFSClient::init()
   return true;
 }
 
+int yadfs::YADFSClient::read(const char *path, char *buf, size_t size,
+                             off_t offset)
+{
+  FileSystemEntry *entry = getEntry(path);
+
+  if (offset == 0)
+  {
+    // Workers map
+    workers_pair pair;
+    pair.first = path;
+    pair.second = new WorkerPool(m_nodeCount);
+    m_workers.insert(pair);
+
+    // Gets the id of the file
+    if (Connect() < 0)
+    {
+      return false;
+    }
+    msg_req_handshake req_handshake;
+    req_handshake.m_msg_id = MSG_REQ_GETID;
+    if (!client->Write(&req_handshake, sizeof (msg_req_handshake)))
+    {
+      return false;
+    }
+    msg_req_getid req_getid;
+    strcpy(req_getid.m_path, path);
+    if (!client->Write(&req_getid, sizeof (msg_req_getid)))
+    {
+      return false;
+    }
+    msg_res_getid res_getid;
+    if (!client->Read(&res_getid, sizeof (msg_res_getid)))
+    {
+      return false;
+    }
+    if (!res_getid.m_ok)
+    {
+      return false;
+    }
+    Close();
+
+    // Gets the size of the file
+    if (Connect() < 0)
+    {
+      return false;
+    }
+    req_handshake.m_msg_id = MSG_REQ_GETSIZE;
+    if (!client->Write(&req_handshake, sizeof (msg_req_handshake)))
+    {
+      return false;
+    }
+    msg_req_getsize req_getsize;
+    strcpy(req_getsize.m_path, path);
+    if (!client->Write(&req_getsize, sizeof (msg_req_getsize)))
+    {
+      return false;
+    }
+    msg_res_getsize res_getsize;
+    if (!client->Read(&res_getsize, sizeof (msg_res_getsize)))
+    {
+      return false;
+    }
+    if (!res_getsize.m_ok)
+    {
+      return false;
+    }
+    Close();
+
+    entry->m_id = res_getid.m_id;
+    entry->m_size = res_getsize.m_size;
+    entry->m_chunk_count = entry->m_size / CHUNK_SIZE;
+    if (entry->m_size % CHUNK_SIZE)
+    {
+      entry->m_chunk_count++;
+    }
+    entry->m_data = new char*[entry->m_chunk_count];
+
+    memset(entry->m_data, 0, entry->m_chunk_count * (sizeof (char **)));
+  }
+
+  int chunk_id = offset / CHUNK_SIZE;
+
+  // TODO create an mutex array to reduce the bottleneck (one per worker).
+  pthread_mutex_lock(&m_mutex);
+  if (entry->m_data[chunk_id] == NULL)
+  {
+    m_waitingFor = chunk_id;
+    // pthread_cond_wait(&m_cond, &m_mutex);
+  }
+  pthread_mutex_unlock(&m_mutex);
+  
+  /*
+    // Calculates the id of the chunk
+    int chunk_id = offset / CHUNK_SIZE;
+
+    if (m_mode == RAID_0)
+    {
+      // Calculates the id of the working thread (worker_id)
+      int worker_id = chunk_id % m_nodeCount;
+
+      JobData *data = new JobData();
+      data->m_chunk_id = chunk_id;
+      data->m_file_id = entry->m_id;
+      memcpy(data->m_data, buf, size);
+      data->m_size = size;
+      data->m_node_client = m_node_clients[worker_id];
+
+      Job *job = new Job(write_func, data);
+
+      // Schedules the job to be done by the #worker_id worker thread
+      workers_it it = m_workers.find(path);
+      if (it == m_workers.end())
+      {
+        return false;
+      }
+      it->second->addJob(worker_id, job);
+    }
+    else // RAID_1
+    {
+      //m_workers[0]->addJob(*job);
+      //m_workers[1]->addJob(*job);
+    }
+
+    // Increments the size of this path by size
+    entry->m_size += size;
+
+    return true;
+
+
+
+
+
+
+
+
+
+    //assert(size == CHUNK_SIZE);
+
+    FileSystemEntry *entry = NULL;
+
+    entry = new FileSystemEntry();
+    delete entry;
+    /*
+    if (offset == 0)
+    {
+      entry = new FileSystemEntry();
+      entry->m_path = path;
+      entry->m_id = 0;
+      entry->m_size = 0;
+      entry->m_chunkCount = entry->m_size / CHUNK_SIZE;
+      if (entry->m_size % CHUNK_SIZE)
+      {
+        entry->m_chunkCount++;
+      }
+
+      size_t dataSize = sizeof (char *) * entry->m_chunkCount;
+      entry->m_data = (char **) malloc(dataSize);
+      memset(entry->m_data, 0, dataSize);
+    }
+    else
+    {
+      entry = getEntry(path);
+    }
+
+    int chunk_id = offset / CHUNK_SIZE;
+
+    pthread_mutex_lock(&m_mutex);
+    if (entry->m_data[chunk_id] == NULL)
+    {
+      printf("opa...\n");
+      // pthread_cond_wait(&m_cond, m_mutex);
+    }
+    pthread_mutex_unlock(&m_mutex);
+
+    // TODO change to real data
+    entry->m_data[chunk_id] = (char *)malloc(CHUNK_SIZE);
+    memset(entry->m_data[chunk_id], 32, CHUNK_SIZE);
+
+    // TODO change to real read size instead of CHUNK_SIZE
+    memcpy(buf, entry->m_data[chunk_id], CHUNK_SIZE);
+    free(entry->m_data[chunk_id]);*/
+
+  return CHUNK_SIZE;
+}
+
 bool yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,
                                       size_t size, off_t offset)
 {
@@ -117,7 +308,7 @@ bool yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,
     {
       return false;
     }
-    
+
     entry->m_id = res_getid.m_id;
   }
 
@@ -219,6 +410,7 @@ yadfs::FileSystemEntry *yadfs::YADFSClient::getEntry(const string& path)
     entries_pair p;
     p.first = path;
     p.second = new FileSystemEntry();
+    p.second->m_path = path;
     m_entries.insert(p);
     return p.second;
   }
@@ -511,25 +703,7 @@ int yadfs_write_real(const char *path, const char *buf, size_t size,
 int yadfs_read_real(const char *path, char *buf, size_t size, off_t offset,
                     struct fuse_file_info *fi)
 {
-  /*
-  int fd;
-  int res;
-
-
-  char new_path[512];
-  get_new_path(path, new_path, 512);
-
-  (void) fi;
-  fd = open(new_path, O_RDONLY);
-  if (fd == -1)
-    return -errno;
-
-  res = pread(fd, buf, size, offset);
-  if (res == -1)
-    res = -errno;
-
-  close(fd);*/
-  return 0;
+  return client->read(path, buf, size, offset);
 }
 
 int yadfs_release_real(const char *path, struct fuse_file_info *fi)
