@@ -456,6 +456,8 @@ void read_func(void *data)
   }
   pthread_mutex_unlock(&gbl_mutex);
 
+  dt->m_node_client->Close();
+
 }
 
 int yadfs_client_init(char *host, int port)
