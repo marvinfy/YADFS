@@ -18,6 +18,7 @@
 #include "../commons/data_node.hpp"
 #include "../commons/chunk.h"
 #include "../commons/client.hpp"
+#include "../commons/messages.hpp"
 
 #include <assert.h>
 #include <map>
@@ -45,14 +46,12 @@ typedef pair<string, WorkerPool *> workers_pair;
 
 class FileSystemEntry
 {
-  friend class YADFSClient;
-private:
+public:
   string m_path;
   size_t m_size;
   unsigned int m_id;
   unsigned int m_chunk_count;
-  char **m_data;
-public:
+  msg_res_readchunk **m_data;
 
   FileSystemEntry() : m_size(0)
   {
@@ -71,10 +70,6 @@ private:
   entries_map m_entries;
   Mode m_mode;
 
-  pthread_mutex_t m_mutex;
-  pthread_cond_t m_cond;
-  int m_waitingFor;
-
   void releaseWrite(void *instance);
 public:
   YADFSClient(const ClientConfig& config);
@@ -87,6 +82,11 @@ public:
   FileSystemEntry *getEntry(const string& path);
   void removeEntry(const string& path);
 
+  // Message methods
+  int getId(const string& path);
+  size_t getSize(const string& path);
+
+
 };
 
 class JobData
@@ -98,6 +98,7 @@ public:
   char m_data[CHUNK_SIZE];
   size_t m_size;
   Client *m_node_client;
+  FileSystemEntry *m_entry;
 };
 
 }

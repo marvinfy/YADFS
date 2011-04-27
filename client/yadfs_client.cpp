@@ -1,3 +1,10 @@
+/*
+ * File:   yadfs_client.cpp
+ * Author: marcusviniciusns
+ *
+ * Created on April 1, 2011, 11:06 PM
+ */
+
 #include "fuse.h"
 #include "job.hpp"
 #include "yadfs_client.hpp"
@@ -22,8 +29,15 @@ using yadfs::YADFSClient;
 using yadfs::JobData;
 using yadfs::Logging;
 
-ClientConfig *config = NULL;
+// -----------------------------------------------------------------------
+// Globals
+// -----------------------------------------------------------------------
+static ClientConfig *config = NULL;
 static YADFSClient *client = NULL;
+static pthread_mutex_t gbl_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t gbl_cond = PTHREAD_COND_INITIALIZER;
+static int gbl_waiting_for = -1;
+static bool gbl_last_write = false;
 
 // -----------------------------------------------------------------------
 // C++ Methods
@@ -32,9 +46,7 @@ static YADFSClient *client = NULL;
 yadfs::YADFSClient::YADFSClient(const ClientConfig& config) : Client(config),
 m_nodeCount(0)
 {
-  pthread_mutex_init(&m_mutex, NULL);
-  pthread_cond_init(&m_cond, NULL);
-  m_waitingFor = -1;
+  gbl_waiting_for = -1;
 }
 
 yadfs::YADFSClient::~YADFSClient()
@@ -63,6 +75,12 @@ bool yadfs::YADFSClient::init()
 
   m_mode = res_srvcfg.m_mode;
   m_nodeCount = res_srvcfg.m_node_count;
+  if (m_nodeCount == 0)
+  {
+    yadfs::Logging::log(Logging::ERROR, "Node count is zero.");
+    return false;
+  }
+
 
   for (int i = 0; i < res_srvcfg.m_node_count; i++)
   {
@@ -94,176 +112,52 @@ int yadfs::YADFSClient::read(const char *path, char *buf, size_t size,
     pair.second = new WorkerPool(m_nodeCount);
     m_workers.insert(pair);
 
-    // Gets the id of the file
-    if (Connect() < 0)
-    {
-      return false;
-    }
-    msg_req_handshake req_handshake;
-    req_handshake.m_msg_id = MSG_REQ_GETID;
-    if (!client->Write(&req_handshake, sizeof (msg_req_handshake)))
-    {
-      return false;
-    }
-    msg_req_getid req_getid;
-    strcpy(req_getid.m_path, path);
-    if (!client->Write(&req_getid, sizeof (msg_req_getid)))
-    {
-      return false;
-    }
-    msg_res_getid res_getid;
-    if (!client->Read(&res_getid, sizeof (msg_res_getid)))
-    {
-      return false;
-    }
-    if (!res_getid.m_ok)
-    {
-      return false;
-    }
-    Close();
-
-    // Gets the size of the file
-    if (Connect() < 0)
-    {
-      return false;
-    }
-    req_handshake.m_msg_id = MSG_REQ_GETSIZE;
-    if (!client->Write(&req_handshake, sizeof (msg_req_handshake)))
-    {
-      return false;
-    }
-    msg_req_getsize req_getsize;
-    strcpy(req_getsize.m_path, path);
-    if (!client->Write(&req_getsize, sizeof (msg_req_getsize)))
-    {
-      return false;
-    }
-    msg_res_getsize res_getsize;
-    if (!client->Read(&res_getsize, sizeof (msg_res_getsize)))
-    {
-      return false;
-    }
-    if (!res_getsize.m_ok)
-    {
-      return false;
-    }
-    Close();
-
-    entry->m_id = res_getid.m_id;
-    entry->m_size = res_getsize.m_size;
+    entry->m_id = getId(path);
+    entry->m_size = getSize(path);
     entry->m_chunk_count = entry->m_size / CHUNK_SIZE;
     if (entry->m_size % CHUNK_SIZE)
     {
       entry->m_chunk_count++;
     }
-    entry->m_data = new char*[entry->m_chunk_count];
+    entry->m_data = new msg_res_readchunk*[entry->m_chunk_count];
+    memset(entry->m_data, 0, entry->m_chunk_count * (sizeof (msg_res_readchunk **)));
 
-    memset(entry->m_data, 0, entry->m_chunk_count * (sizeof (char **)));
+    for (int i = 0; i < entry->m_chunk_count; i++)
+    {
+      // Calculates the id of the working thread (worker_id)
+      int worker_id = i % m_nodeCount;
+
+      JobData *data = new JobData();
+      data->m_chunk_id = i;
+      data->m_file_id = entry->m_id;
+      data->m_size = size;
+      data->m_node_client = m_node_clients[worker_id];
+      data->m_entry = entry;
+
+      Job *job = new Job(read_func, data);
+
+      // Schedules the job to be done by the #worker_id worker thread
+      pair.second->addJob(worker_id, job);
+    }
   }
 
   int chunk_id = offset / CHUNK_SIZE;
 
-  // TODO create an mutex array to reduce the bottleneck (one per worker).
-  pthread_mutex_lock(&m_mutex);
+  pthread_mutex_lock(&gbl_mutex);
   if (entry->m_data[chunk_id] == NULL)
   {
-    m_waitingFor = chunk_id;
-    // pthread_cond_wait(&m_cond, &m_mutex);
+    gbl_waiting_for = chunk_id;
+    pthread_cond_wait(&gbl_cond, &gbl_mutex);
   }
-  pthread_mutex_unlock(&m_mutex);
-  
-  /*
-    // Calculates the id of the chunk
-    int chunk_id = offset / CHUNK_SIZE;
+  pthread_mutex_unlock(&gbl_mutex);
 
-    if (m_mode == RAID_0)
-    {
-      // Calculates the id of the working thread (worker_id)
-      int worker_id = chunk_id % m_nodeCount;
+  msg_res_readchunk *chunk = (msg_res_readchunk *) entry->m_data[chunk_id];
+  memcpy(buf, chunk->m_data, size);
 
-      JobData *data = new JobData();
-      data->m_chunk_id = chunk_id;
-      data->m_file_id = entry->m_id;
-      memcpy(data->m_data, buf, size);
-      data->m_size = size;
-      data->m_node_client = m_node_clients[worker_id];
+  delete entry->m_data[chunk_id];
+  entry->m_data[chunk_id] = NULL;
 
-      Job *job = new Job(write_func, data);
-
-      // Schedules the job to be done by the #worker_id worker thread
-      workers_it it = m_workers.find(path);
-      if (it == m_workers.end())
-      {
-        return false;
-      }
-      it->second->addJob(worker_id, job);
-    }
-    else // RAID_1
-    {
-      //m_workers[0]->addJob(*job);
-      //m_workers[1]->addJob(*job);
-    }
-
-    // Increments the size of this path by size
-    entry->m_size += size;
-
-    return true;
-
-
-
-
-
-
-
-
-
-    //assert(size == CHUNK_SIZE);
-
-    FileSystemEntry *entry = NULL;
-
-    entry = new FileSystemEntry();
-    delete entry;
-    /*
-    if (offset == 0)
-    {
-      entry = new FileSystemEntry();
-      entry->m_path = path;
-      entry->m_id = 0;
-      entry->m_size = 0;
-      entry->m_chunkCount = entry->m_size / CHUNK_SIZE;
-      if (entry->m_size % CHUNK_SIZE)
-      {
-        entry->m_chunkCount++;
-      }
-
-      size_t dataSize = sizeof (char *) * entry->m_chunkCount;
-      entry->m_data = (char **) malloc(dataSize);
-      memset(entry->m_data, 0, dataSize);
-    }
-    else
-    {
-      entry = getEntry(path);
-    }
-
-    int chunk_id = offset / CHUNK_SIZE;
-
-    pthread_mutex_lock(&m_mutex);
-    if (entry->m_data[chunk_id] == NULL)
-    {
-      printf("opa...\n");
-      // pthread_cond_wait(&m_cond, m_mutex);
-    }
-    pthread_mutex_unlock(&m_mutex);
-
-    // TODO change to real data
-    entry->m_data[chunk_id] = (char *)malloc(CHUNK_SIZE);
-    memset(entry->m_data[chunk_id], 32, CHUNK_SIZE);
-
-    // TODO change to real read size instead of CHUNK_SIZE
-    memcpy(buf, entry->m_data[chunk_id], CHUNK_SIZE);
-    free(entry->m_data[chunk_id]);*/
-
-  return CHUNK_SIZE;
+  return size;
 }
 
 bool yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,
@@ -278,38 +172,7 @@ bool yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,
     pair.second = new WorkerPool(m_nodeCount);
     m_workers.insert(pair);
 
-    // Gets the id
-    if (Connect() < 0)
-    {
-      return false;
-    }
-
-    msg_req_handshake req_handshake;
-    req_handshake.m_msg_id = MSG_REQ_GETID;
-    if (!client->Write(&req_handshake, sizeof (msg_req_handshake)))
-    {
-      return false;
-    }
-
-    msg_req_getid req_getid;
-    strcpy(req_getid.m_path, path);
-    if (!client->Write(&req_getid, sizeof (msg_req_getid)))
-    {
-      return false;
-    }
-
-    msg_res_getid res_getid;
-    if (!client->Read(&res_getid, sizeof (msg_res_getid)))
-    {
-      return false;
-    }
-
-    if (!res_getid.m_ok)
-    {
-      return false;
-    }
-
-    entry->m_id = res_getid.m_id;
+    entry->m_id = getId(path);
   }
 
   // Calculates the id of the chunk
@@ -427,6 +290,76 @@ void yadfs::YADFSClient::removeEntry(const string& path)
   m_entries.erase(it);
 }
 
+int yadfs::YADFSClient::getId(const string& path)
+{
+  if (Connect() < 0)
+  {
+    return -1;
+  }
+
+  msg_req_handshake req_handshake;
+  req_handshake.m_msg_id = MSG_REQ_GETID;
+  if (!client->Write(&req_handshake, sizeof (msg_req_handshake)))
+  {
+    return -1;
+  }
+
+  msg_req_getid req_getid;
+  strcpy(req_getid.m_path, path.c_str());
+  if (!client->Write(&req_getid, sizeof (msg_req_getid)))
+  {
+    return -1;
+  }
+
+  msg_res_getid res_getid;
+  if (!client->Read(&res_getid, sizeof (msg_res_getid)))
+  {
+    return -1;
+  }
+
+  if (!res_getid.m_ok)
+  {
+    return -1;
+  }
+
+  Close();
+
+  return res_getid.m_id;
+}
+
+size_t yadfs::YADFSClient::getSize(const string& path)
+{
+  if (Connect() < 0)
+  {
+    return -1;
+  }
+
+  msg_req_handshake req_handshake;
+  req_handshake.m_msg_id = MSG_REQ_GETSIZE;
+  if (!client->Write(&req_handshake, sizeof (msg_req_handshake)))
+  {
+    return -1;
+  }
+  msg_req_getsize req_getsize;
+  strcpy(req_getsize.m_path, path.c_str());
+  if (!client->Write(&req_getsize, sizeof (msg_req_getsize)))
+  {
+    return -1;
+  }
+  msg_res_getsize res_getsize;
+  if (!client->Read(&res_getsize, sizeof (msg_res_getsize)))
+  {
+    return -1;
+  }
+  if (!res_getsize.m_ok)
+  {
+    return -1;
+  }
+  Close();
+
+  return res_getsize.m_size;
+}
+
 // -----------------------------------------------------------------------
 // C Functions
 // -----------------------------------------------------------------------
@@ -479,6 +412,49 @@ void write_func(void *data)
 
 void read_func(void *data)
 {
+  JobData *dt = (JobData *) data;
+
+  if (dt->m_node_client->Connect() < 0)
+  {
+    return;
+  }
+
+  msg_req_handshake req_handshake;
+  req_handshake.m_msg_id = MSG_REQ_READCHUNK;
+  if (!dt->m_node_client->Write(&req_handshake, sizeof (msg_req_handshake)))
+  {
+    return;
+  }
+
+  msg_req_readchunk req_readchunk;
+  req_readchunk.m_file_id = dt->m_file_id;
+  req_readchunk.m_chunk_id = dt->m_chunk_id;
+  if (!dt->m_node_client->Write(&req_readchunk, sizeof (msg_req_readchunk)))
+  {
+    return;
+  }
+
+  msg_res_readchunk *res_readchunk = new msg_res_readchunk;
+  if (!dt->m_node_client->Read(res_readchunk, sizeof (msg_res_readchunk)))
+  {
+    return;
+  }
+  if (!res_readchunk->m_ok)
+  {
+    return;
+  }
+
+
+  yadfs::FileSystemEntry *entry = dt->m_entry;
+
+  pthread_mutex_lock(&gbl_mutex);
+  entry->m_data[dt->m_chunk_id] = res_readchunk;
+  if (gbl_waiting_for == dt->m_chunk_id)
+  {
+    gbl_waiting_for = -1;
+    pthread_cond_signal(&gbl_cond);
+  }
+  pthread_mutex_unlock(&gbl_mutex);
 
 }
 
@@ -696,6 +672,7 @@ int yadfs_open_real(const char *path, struct fuse_file_info *fi)
 int yadfs_write_real(const char *path, const char *buf, size_t size,
                      off_t offset, struct fuse_file_info *fi)
 {
+  gbl_last_write = true;
   client->enqueueWrite(path, buf, size, offset);
   return size;
 }
@@ -703,11 +680,15 @@ int yadfs_write_real(const char *path, const char *buf, size_t size,
 int yadfs_read_real(const char *path, char *buf, size_t size, off_t offset,
                     struct fuse_file_info *fi)
 {
+  gbl_last_write = false;
   return client->read(path, buf, size, offset);
 }
 
 int yadfs_release_real(const char *path, struct fuse_file_info *fi)
 {
-  client->releaseWrite(path);
+  if (gbl_last_write)
+  {
+    client->releaseWrite(path);
+  }
   return 0;
 }

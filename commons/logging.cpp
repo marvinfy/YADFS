@@ -1,3 +1,11 @@
+/*
+ * File:   logging.cpp
+ * Author: marcusviniciusns
+ *
+ * Created on March 10, 2011, 9:47 PM
+ */
+
+
 #include "logging.hpp"
 
 #include <stdio.h>

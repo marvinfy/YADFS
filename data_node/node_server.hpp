@@ -25,7 +25,7 @@ public:
   virtual ~NodeServer();
   int writeFile(unsigned int fileId, unsigned int chunkId, const char *data,
                 size_t size);
-  int readFile(unsigned int fileId, unsigned int chunkId, const char *data,
+  int readFile(unsigned int fileId, unsigned int chunkId, char *data,
                size_t size);
   void *Receive(int sockfd);
 };

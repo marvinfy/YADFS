@@ -1,3 +1,10 @@
+/*
+ * File:   utils.cpp
+ * Author: marcusviniciusns
+ *
+ * Created on March 10, 2011, 9:47 PM
+ */
+
 
 #include "utils.hpp"
 #include "../commons/logging.hpp"

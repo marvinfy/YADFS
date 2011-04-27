@@ -1,7 +1,7 @@
 /* 
  * File:   FileSystemEntry.hpp
  * Author: marcusviniciusns
- *yadfs::
+ *
  * Created on March 26, 2011, 5:46 PM
  */
 
