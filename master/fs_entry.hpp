@@ -1,5 +1,5 @@
 /* 
- * File:   FileSystemEntry.hpp
+ * File:   fs_entry.hpp
  * Author: marcusviniciusns
  *
  * Created on March 26, 2011, 5:46 PM

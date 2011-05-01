@@ -28,7 +28,7 @@ yadfs::Worker::~Worker()
 
 void *yadfs::Worker::work(void *data)
 {
-  Worker *worker = (Worker *)data;
+  Worker *worker = (Worker *) data;
 
   while (true)
   {
@@ -70,7 +70,7 @@ void *yadfs::Worker::work(void *data)
 bool yadfs::Worker::addJob(Job *job)
 {
   bool added = false;
-  
+
   pthread_mutex_lock(&m_mutex_work);
   if (!m_stopping)
   {
@@ -93,7 +93,7 @@ void yadfs::Worker::stopAndCallbackWhenDone(void (*done)(void *), void *data)
     return;
   }
 
-  m_stopping = true;  
+  m_stopping = true;
   m_done = done;
   m_data = data;
 

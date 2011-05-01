@@ -41,7 +41,8 @@ yadfs::FileSystemEntry *yadfs::FileSystem::getEntry(const string& path)
   return it->second;
 }
 
-bool yadfs::FileSystem::addEntry(const string& parentPath, FileSystemEntry *child)
+bool yadfs::FileSystem::addEntry(const string& parentPath,
+                                 FileSystemEntry *child)
 {
   FileSystemEntry *parent = getEntry(parentPath);
   if (parent == NULL || child == NULL)
@@ -59,7 +60,8 @@ bool yadfs::FileSystem::addEntry(const string& parentPath, FileSystemEntry *chil
   return true;
 }
 
-bool yadfs::FileSystem::addEntry(FileSystemEntry *parent, FileSystemEntry *child)
+bool yadfs::FileSystem::addEntry(FileSystemEntry *parent,
+                                 FileSystemEntry *child)
 {
   if (parent == NULL || child == NULL)
   {
@@ -72,7 +74,7 @@ bool yadfs::FileSystem::addEntry(FileSystemEntry *parent, FileSystemEntry *child
 unsigned int yadfs::FileSystem::getNextId()
 {
   unsigned int ret;
-  
+
   pthread_mutex_lock(&mutex_next_id);
   ret = next_id++;
   pthread_mutex_unlock(&mutex_next_id);

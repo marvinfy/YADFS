@@ -20,7 +20,8 @@
 
 using yadfs::Logging;
 
-yadfs::Client::Client(const ClientConfig& config) : m_sockfd(-1), m_config(config)
+yadfs::Client::Client(const ClientConfig& config) :
+m_sockfd(-1), m_config(config)
 {
 }
 

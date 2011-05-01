@@ -25,7 +25,7 @@ public:
   ServerMode m_mode;
   char *m_user;
   char *m_pass;
-  
+
   ServerConfig()
   {
     m_port = 10000;

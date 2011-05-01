@@ -18,6 +18,7 @@ namespace yadfs
 
 class Job;
 class Worker;
+
 class WorkerPool
 {
 private:

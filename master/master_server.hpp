@@ -1,5 +1,5 @@
 /* 
- * File:   MasterServer.hpp
+ * File:   master_server.hpp
  * Author: marcusviniciusns
  *
  * Created on 14 de Março de 2011, 23:57
@@ -30,8 +30,16 @@ public:
   MasterServer(const ServerConfig& config);
   MasterServer(const MasterServer& orig);
   virtual ~MasterServer();
-  void setMode(Mode mode) { m_mode = mode; }
-  Mode getMode() { return m_mode; }
+
+  void setMode(Mode mode)
+  {
+    m_mode = mode;
+  }
+
+  Mode getMode()
+  {
+    return m_mode;
+  }
   void registerDataNode(const DataNode& node);
   void *Receive(int sockfd);
 };

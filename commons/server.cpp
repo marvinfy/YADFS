@@ -17,21 +17,23 @@
 
 using yadfs::Logging;
 
-typedef struct _receive_data {
+typedef struct _receive_data
+{
   yadfs::Server *m_server;
   int m_sockfd;
 } receive_data;
 
 void *yadfs::Server::Receive(void *data)
 {
-  receive_data *rd = (receive_data *)data;
+  receive_data *rd = (receive_data *) data;
   void *ret = rd->m_server->Receive(rd->m_sockfd);
   delete rd;
-  
+
   return ret;
 }
 
-yadfs::Server::Server(const ServerConfig& config) : m_running(false), m_sockfd(-1), m_config(config)
+yadfs::Server::Server(const ServerConfig& config) :
+m_running(false), m_sockfd(-1), m_config(config)
 {
 }
 
@@ -57,20 +59,21 @@ int yadfs::Server::Start()
     return -1;
   }
 
-  memset((char *) &srv_addr, 0, sizeof(srv_addr));
+  memset((char *) &srv_addr, 0, sizeof (srv_addr));
   srv_addr.sin_family = AF_INET;
   srv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
   srv_addr.sin_port = htons(m_config.m_port);
 
   for (tries = 1;;)
   {
-    if(bind(m_sockfd, (sockaddr *)&srv_addr, sizeof(srv_addr)) == 0)
+    if (bind(m_sockfd, (sockaddr *) & srv_addr, sizeof (srv_addr)) == 0)
     {
       break;
     }
 
-    Logging::log(Logging::ERROR, "Cannot bind local address - #%d attempt.", tries);
-    
+    Logging::log(Logging::ERROR, "Cannot bind local address - #%d attempt.",
+                 tries);
+
     if (tries++ >= m_config.m_retries)
     {
       close(m_sockfd);
@@ -84,11 +87,11 @@ int yadfs::Server::Start()
   m_running = true;
 
   listen(m_sockfd, 5);
-  len = sizeof(cli_addr);
-  
+  len = sizeof (cli_addr);
+
   while (m_running)
   {
-    int sockfd = accept(m_sockfd, (sockaddr *) &cli_addr, (socklen_t *) &len);
+    int sockfd = accept(m_sockfd, (sockaddr *) & cli_addr, (socklen_t *) & len);
     if (sockfd < 0)
     {
       Logging::log(Logging::ERROR, "Accept error.");
@@ -101,11 +104,11 @@ int yadfs::Server::Start()
 
     if (m_config.m_mode == MULTI_THREADED)
     {
-      pthread_create(&thread, NULL, yadfs::Server::Receive, (void *)rd);
+      pthread_create(&thread, NULL, yadfs::Server::Receive, (void *) rd);
     }
     else // SINGLE_THREADED
     {
-      yadfs::Server::Receive((void *)rd);
+      yadfs::Server::Receive((void *) rd);
     }
   }
 

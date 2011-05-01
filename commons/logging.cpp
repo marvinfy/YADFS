@@ -5,7 +5,6 @@
  * Created on March 10, 2011, 9:47 PM
  */
 
-
 #include "logging.hpp"
 
 #include <stdio.h>
@@ -28,9 +27,9 @@ void yadfs::Logging::log(Level level, const char *fmt, ...)
     printf("[YADFS][UNKNOWN]");
   }
 
- va_list vl;
- va_start(vl,fmt);
- vprintf(fmt,vl);
- va_end(vl);
- printf("\n");
+  va_list vl;
+  va_start(vl, fmt);
+  vprintf(fmt, vl);
+  va_end(vl);
+  printf("\n");
 }

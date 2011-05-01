@@ -17,6 +17,7 @@ namespace yadfs
 
 class Client;
 class Server;
+
 class DataNode
 {
   friend class Client;
@@ -26,6 +27,7 @@ private:
   int m_port;
 
 public:
+
   DataNode(const string& host, int port) : m_host(host), m_port(port)
   {
   }
@@ -44,6 +46,7 @@ public:
   {
     return &m_host;
   }
+
   int getPort()
   {
     return m_port;

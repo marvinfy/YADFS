@@ -5,7 +5,6 @@
  * Created on 14 de Março de 2011, 23:57
  */
 
-
 #include "master_server.hpp"
 
 #include <stdlib.h>

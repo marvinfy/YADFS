@@ -17,13 +17,14 @@ namespace yadfs
 {
 
 class Job;
+
 class Worker
 {
 private:
   pthread_mutex_t m_mutex_work;
   pthread_cond_t m_cond_work;
   pthread_t m_thread;
-  
+
   queue<Job *> m_queue;
   bool m_stopping;
 

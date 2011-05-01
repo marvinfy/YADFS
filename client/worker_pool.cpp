@@ -45,14 +45,15 @@ bool yadfs::WorkerPool::addJob(unsigned int workerId, Job *job)
 
 void yadfs::WorkerPool::workerDone(void *instance)
 {
-  WorkerPool *pool = (WorkerPool *)instance;
-  
+  WorkerPool *pool = (WorkerPool *) instance;
+
   pthread_mutex_lock(&pool->m_mutex);
   Logging::log(Logging::INFO, "[WorkerPool::workerDone]Done");
   if (--pool->m_remaining == 0)
   {
 
-    Logging::log(Logging::INFO, "[WorkerPool::workerDone]Sending cond a signal");
+    Logging::log(Logging::INFO,
+                 "[WorkerPool::workerDone]Sending cond a signal");
     pthread_cond_signal(&pool->m_cond);
   }
   pthread_mutex_unlock(&pool->m_mutex);
@@ -64,10 +65,11 @@ void yadfs::WorkerPool::stop()
 
   for (int i = 0; i < m_workers.size(); i++)
   {
-    Logging::log(Logging::INFO, "[WorkerPool::stop]Asking worker %d to stop", i);
+    Logging::log(Logging::INFO,
+                 "[WorkerPool::stop]Asking worker %d to stop", i);
     m_workers[i]->stopAndCallbackWhenDone(&workerDone, this);
   }
-  
+
   Logging::log(Logging::INFO, "[WorkerPool::stop]Waiting cond");
   pthread_cond_wait(&m_cond, &m_mutex);
   Logging::log(Logging::INFO, "[WorkerPool::stop]Stopped");

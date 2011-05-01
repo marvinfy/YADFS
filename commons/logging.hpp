@@ -20,7 +20,11 @@ namespace yadfs
 class Logging
 {
 public:
-  enum Level { INFO, WARNING, ERROR };
+
+  enum Level
+  {
+    INFO, WARNING, ERROR
+  };
   static void log(Level level, const char *fmt, ...);
 };
 

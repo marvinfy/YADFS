@@ -120,7 +120,8 @@ int yadfs::YADFSClient::read(const char *path, char *buf, size_t size,
       entry->m_chunk_count++;
     }
     entry->m_data = new msg_res_readchunk*[entry->m_chunk_count];
-    memset(entry->m_data, 0, entry->m_chunk_count * (sizeof (msg_res_readchunk *)));
+    memset(entry->m_data, 0,
+           entry->m_chunk_count * (sizeof (msg_res_readchunk *)));
 
     for (int i = 0; i < entry->m_chunk_count; i++)
     {

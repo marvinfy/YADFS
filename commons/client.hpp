@@ -1,5 +1,5 @@
 /* 
- * File:   Client.hpp
+ * File:   client.hpp
  * Author: marcusviniciusns
  *
  * Created on 14 de Março de 2011, 01:10
@@ -28,7 +28,9 @@ public:
     m_port = 10000;
   }
 
-  ClientConfig(string host, int port) : m_host(host), m_port(port) {}
+  ClientConfig(string host, int port) : m_host(host), m_port(port)
+  {
+  }
 };
 
 class Client

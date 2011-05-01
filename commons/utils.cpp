@@ -5,7 +5,6 @@
  * Created on March 10, 2011, 9:47 PM
  */
 
-
 #include "utils.hpp"
 #include "../commons/logging.hpp"
 
@@ -64,7 +63,7 @@ void parse_argv(int argc, char *argv[])
   ifstream file(path, ios::in);
   if (file.is_open())
   {
-    while(file.good())
+    while (file.good())
     {
       getline(file, line);
 

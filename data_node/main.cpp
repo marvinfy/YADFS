@@ -51,9 +51,9 @@ int main(int argc, char* argv[])
   NodeServer server(config, nId, nCount);
   server.Start();
 
+  delete id;
+  delete count;
   delete port;
-
-  // cria res = open(new_path, O_CREAT | O_EXCL | O_WRONLY, mode);
 
   return 0;
 }
