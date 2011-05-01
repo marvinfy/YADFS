@@ -120,7 +120,7 @@ int yadfs::YADFSClient::read(const char *path, char *buf, size_t size,
       entry->m_chunk_count++;
     }
     entry->m_data = new msg_res_readchunk*[entry->m_chunk_count];
-    memset(entry->m_data, 0, entry->m_chunk_count * (sizeof (msg_res_readchunk **)));
+    memset(entry->m_data, 0, entry->m_chunk_count * (sizeof (msg_res_readchunk *)));
 
     for (int i = 0; i < entry->m_chunk_count; i++)
     {
@@ -147,6 +147,9 @@ int yadfs::YADFSClient::read(const char *path, char *buf, size_t size,
     return 0;
   }
 
+  yadfs::Logging::log(Logging::INFO, "Processing chunck %d of %d\n", chunk_id,
+                      entry->m_chunk_count);
+
   pthread_mutex_lock(&gbl_mutex);
   if (entry->m_data[chunk_id] == NULL)
   {
@@ -157,11 +160,14 @@ int yadfs::YADFSClient::read(const char *path, char *buf, size_t size,
 
   msg_res_readchunk *chunk = (msg_res_readchunk *) entry->m_data[chunk_id];
   memcpy(buf, chunk->m_data, size);
+  int read = chunk->m_read;
+
+  yadfs::Logging::log(Logging::INFO, "Read %d\n", read);
 
   delete entry->m_data[chunk_id];
   entry->m_data[chunk_id] = NULL;
 
-  return chunk->m_read;
+  return read;
 }
 
 bool yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,
