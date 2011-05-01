@@ -33,11 +33,12 @@ int yadfs::NodeServer::writeFile(unsigned int fileId, unsigned int chunkId,
 {
   FILE *fd;
   char name[64];
+  size_t written;
 
   sprintf(name, "data/%08d_%016d.bin", fileId, chunkId);
   fd = fopen(name, "w");
 
-  fwrite(data, 1, size, fd);
+  written = fwrite(data, 1, size, fd);
   fclose(fd);
 
   return 0;
@@ -48,14 +49,15 @@ int yadfs::NodeServer::readFile(unsigned int fileId, unsigned int chunkId,
 {
   FILE *fd;
   char name[64];
+  size_t read;
 
   sprintf(name, "data/%08d_%016d.bin", fileId, chunkId);
   fd = fopen(name, "r");
 
-  fread(data, 1, size, fd);
+  read = fread(data, 1, size, fd);
   fclose(fd);
 
-  return 0;
+  return read;
 }
 
 void *yadfs::NodeServer::Receive(int sockfd)
@@ -114,6 +116,7 @@ void *yadfs::NodeServer::Receive(int sockfd)
     {
       goto cleanup;
     }
+    break;
   }
   case MSG_REQ_READCHUNK:
   {
@@ -124,21 +127,24 @@ void *yadfs::NodeServer::Receive(int sockfd)
     }
 
     msg_res_readchunk res_readchunk;
-    if (readFile(req_readchunk.m_file_id, req_readchunk.m_chunk_id,
-                 res_readchunk.m_data, CHUNK_SIZE) == 0)
-    {
-      res_readchunk.m_ok = true;
-    }
-    else
+    size_t read;
+    read = readFile(req_readchunk.m_file_id, req_readchunk.m_chunk_id,
+                    res_readchunk.m_data, CHUNK_SIZE);
+    if (read == 0)
     {
       res_readchunk.m_ok = false;
     }
+    else
+    {
+      res_readchunk.m_ok = true;
+    }
+    res_readchunk.m_read = read;
 
     if (!Write(sockfd, &res_readchunk, sizeof (msg_res_readchunk)))
     {
       goto cleanup;
     }
-
+    break;
   }
   }
 

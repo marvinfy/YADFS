@@ -142,6 +142,10 @@ int yadfs::YADFSClient::read(const char *path, char *buf, size_t size,
   }
 
   int chunk_id = offset / CHUNK_SIZE;
+  if (chunk_id >= entry->m_chunk_count)
+  {
+    return 0;
+  }
 
   pthread_mutex_lock(&gbl_mutex);
   if (entry->m_data[chunk_id] == NULL)
@@ -157,7 +161,7 @@ int yadfs::YADFSClient::read(const char *path, char *buf, size_t size,
   delete entry->m_data[chunk_id];
   entry->m_data[chunk_id] = NULL;
 
-  return size;
+  return chunk->m_read;
 }
 
 bool yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,

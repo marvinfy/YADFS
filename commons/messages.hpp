@@ -220,6 +220,7 @@ typedef struct _msg_res_readchunk
 {
   boolean m_ok;
   char m_data[CHUNK_SIZE];
+  size_t m_read;
 } msg_res_readchunk;
 
 #endif	/* MESSAGES_HPP */
