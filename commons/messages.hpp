@@ -45,7 +45,9 @@ enum msgs
   MSG_REQ_GETID,
   MSG_RES_GETID,
   MSG_REQ_READCHUNK,
-  MSG_RES_READCHUNK
+  MSG_RES_READCHUNK,
+  MSG_REQ_RELEASE,
+  MSG_RES_RELEASE
 };
 
 typedef struct _msg_req_handshake
@@ -222,5 +224,15 @@ typedef struct _msg_res_readchunk
   char m_data[CHUNK_SIZE];
   size_t m_read;
 } msg_res_readchunk;
+
+typedef struct _msg_req_release
+{
+  unsigned int m_file_id;
+} msg_req_release;
+
+typedef struct _msg_res_release
+{
+  boolean m_ok;
+} msg_res_release;
 
 #endif	/* MESSAGES_HPP */

@@ -270,6 +270,49 @@ bool yadfs::YADFSClient::releaseWrite(const char *path)
   return true;
 }
 
+bool yadfs::YADFSClient::releaseFiles(const char *path)
+{
+  for (int i = 0; i < m_nodeCount; i++)
+  {
+    yadfs::Logging::log(Logging::INFO, "Releasing %d of %d", i, m_nodeCount);
+
+    if (m_node_clients[i]->Connect() < 0)
+    {
+      return false;
+    }
+
+    msg_req_handshake req_handshake;
+    req_handshake.m_msg_id = MSG_REQ_RELEASE;
+    if (!m_node_clients[i]->Write(&req_handshake, sizeof (msg_req_handshake)))
+    {
+      return false;
+    }
+
+    msg_req_release req_release;
+    req_release.m_file_id = getId(string(path));
+    if (!m_node_clients[i]->Write(&req_release, sizeof (msg_req_release)))
+    {
+      return false;
+    }
+
+    msg_res_release res_release;
+    if (!m_node_clients[i]->Read(&res_release, sizeof (msg_res_release)))
+    {
+      return false;
+    }
+
+    m_node_clients[i]->Close();
+
+    if (!res_release.m_ok)
+    {
+      return false;
+    }
+    yadfs::Logging::log(Logging::INFO, "Released");
+  }
+
+  return true;
+}
+
 yadfs::FileSystemEntry *yadfs::YADFSClient::getEntry(const string& path)
 {
   entries_it it = m_entries.find(path);
@@ -697,5 +740,8 @@ int yadfs_release_real(const char *path, struct fuse_file_info *fi)
   {
     client->releaseWrite(path);
   }
+
+  client->releaseFiles(path);
+
   return 0;
 }

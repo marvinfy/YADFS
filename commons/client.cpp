@@ -52,15 +52,15 @@ int yadfs::Client::Connect()
     return -1;
   }
 
-  memset((char *) &srv_addr, 0, sizeof(srv_addr));
+  memset((char *) &srv_addr, 0, sizeof (srv_addr));
   srv_addr.sin_family = AF_INET;
-  bcopy((char *)server->h_addr,
-        (char *)&srv_addr.sin_addr.s_addr,
+  bcopy((char *) server->h_addr,
+        (char *) &srv_addr.sin_addr.s_addr,
         server->h_length);
   srv_addr.sin_port = htons(m_config.m_port);
 
-  if (connect(m_sockfd, (sockaddr *)&srv_addr, sizeof(srv_addr)) < 0)
-  {  
+  if (connect(m_sockfd, (sockaddr *) & srv_addr, sizeof (srv_addr)) < 0)
+  {
     Logging::log(Logging::ERROR, "Could not connect.");
     close(m_sockfd);
     return -1;
