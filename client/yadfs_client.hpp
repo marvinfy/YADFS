@@ -91,13 +91,25 @@ public:
 
 };
 
-class JobData
+class WriteJobData
 {
 public:
   unsigned int m_file_id;
   unsigned int m_chunk_id;
   char m_path[256];
   char m_data[CHUNK_SIZE];
+  size_t m_size;
+  Client *m_node_client;
+  FileSystemEntry *m_entry;
+};
+
+class ReadJobData
+{
+public:
+  unsigned int m_file_id;
+  unsigned int m_chunk_id;
+  // char m_path[256];
+  // char m_data[CHUNK_SIZE];
   size_t m_size;
   Client *m_node_client;
   FileSystemEntry *m_entry;

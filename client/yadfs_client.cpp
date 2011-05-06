@@ -21,12 +21,15 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/time.h>
+
 
 using std::cout;
 using std::string;
 using yadfs::ClientConfig;
 using yadfs::YADFSClient;
-using yadfs::JobData;
+using yadfs::ReadJobData;
+using yadfs::WriteJobData;
 using yadfs::Logging;
 
 // -----------------------------------------------------------------------
@@ -38,6 +41,8 @@ static pthread_mutex_t gbl_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t gbl_cond = PTHREAD_COND_INITIALIZER;
 static int gbl_waiting_for = -1;
 static bool gbl_last_write = false;
+static timeval gbl_start;
+static timeval gbl_end;
 
 // -----------------------------------------------------------------------
 // C++ Methods
@@ -106,6 +111,8 @@ int yadfs::YADFSClient::read(const char *path, char *buf, size_t size,
 
   if (offset == 0)
   {
+    gettimeofday(&gbl_start, 0);
+
     // Workers map
     workers_pair pair;
     pair.first = path;
@@ -128,7 +135,7 @@ int yadfs::YADFSClient::read(const char *path, char *buf, size_t size,
       // Calculates the id of the working thread (worker_id)
       int worker_id = i % m_nodeCount;
 
-      JobData *data = new JobData();
+      ReadJobData *data = new ReadJobData();
       data->m_chunk_id = i;
       data->m_file_id = entry->m_id;
       data->m_size = size;
@@ -152,7 +159,9 @@ int yadfs::YADFSClient::read(const char *path, char *buf, size_t size,
   if (entry->m_data[chunk_id] == NULL)
   {
     gbl_waiting_for = chunk_id;
+    Logging::log(Logging::INFO, "[YADFSClient::read]Waiting for chunk_id %d", chunk_id);
     pthread_cond_wait(&gbl_cond, &gbl_mutex);
+    Logging::log(Logging::INFO, "[YADFSClient::read]Got chunk_id %d", chunk_id);
   }
   pthread_mutex_unlock(&gbl_mutex);
 
@@ -173,6 +182,8 @@ bool yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,
 
   if (offset == 0)
   {
+    gettimeofday(&gbl_start, 0);
+
     workers_pair pair;
     pair.first = path;
     pair.second = new WorkerPool(m_nodeCount);
@@ -189,7 +200,7 @@ bool yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,
     // Calculates the id of the working thread (worker_id)
     int worker_id = chunk_id % m_nodeCount;
 
-    JobData *data = new JobData();
+    WriteJobData *data = new WriteJobData();
     data->m_chunk_id = chunk_id;
     data->m_file_id = entry->m_id;
     memcpy(data->m_data, buf, size);
@@ -275,7 +286,7 @@ bool yadfs::YADFSClient::releaseFiles(const char *path)
 {
   for (int i = 0; i < m_nodeCount; i++)
   {
-    yadfs::Logging::log(Logging::INFO, "Releasing %d of %d", i, m_nodeCount);
+    yadfs::Logging::log(Logging::INFO, "[YADFSClient::releaseFiles]Releasing %d of %d", i + 1, m_nodeCount);
 
     if (m_node_clients[i]->Connect() < 0)
     {
@@ -310,6 +321,9 @@ bool yadfs::YADFSClient::releaseFiles(const char *path)
     }
     yadfs::Logging::log(Logging::INFO, "Released");
   }
+
+  yadfs::Logging::log(Logging::INFO, "[YADFSClient::releaseFiles]Removing entry");
+  removeEntry(path);
 
   return true;
 }
@@ -415,7 +429,7 @@ size_t yadfs::YADFSClient::getSize(const string& path)
 
 void write_func(void *data)
 {
-  JobData *dt = (JobData *) data;
+  WriteJobData *dt = (WriteJobData *) data;
 
   if (!dt->m_node_client->Connect())
   {
@@ -461,7 +475,7 @@ void write_func(void *data)
 
 void read_func(void *data)
 {
-  JobData *dt = (JobData *) data;
+  ReadJobData *dt = (ReadJobData *) data;
 
   if (dt->m_node_client->Connect() < 0)
   {
@@ -737,12 +751,22 @@ int yadfs_read_real(const char *path, char *buf, size_t size, off_t offset,
 
 int yadfs_release_real(const char *path, struct fuse_file_info *fi)
 {
+  long mtime, seconds, useconds;
+
   if (gbl_last_write)
   {
     client->releaseWrite(path);
   }
 
   client->releaseFiles(path);
+
+  gettimeofday(&gbl_end, 0);
+  seconds = gbl_end.tv_sec - gbl_start.tv_sec;
+  useconds = gbl_end.tv_usec - gbl_start.tv_usec;
+  mtime = ((seconds) * 1000 + useconds/1000.0) + 0.5;
+
+  yadfs::Logging::log(Logging::INFO, "Operation took %ld ms", mtime);
+  yadfs::Logging::log(Logging::INFO, "Operation took %ld sec %ld ms", seconds, useconds/1000.0);
 
   return 0;
 }
