@@ -13,7 +13,6 @@
             <sourceRootList/>
             <confList>
                 <confElem>Debug</confElem>
-                <confElem>Release</confElem>
             </confList>
         </data>
     </configuration>

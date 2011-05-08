@@ -63,29 +63,5 @@
         </archiverTool>
       </compileType>
     </conf>
-    <conf name="Release" type="1">
-      <toolsSet>
-        <developmentServer>localhost</developmentServer>
-        <compilerSet>GNU|GNU</compilerSet>
-        <platform>2</platform>
-      </toolsSet>
-      <compileType>
-        <cTool>
-          <developmentMode>5</developmentMode>
-        </cTool>
-        <ccTool>
-          <developmentMode>5</developmentMode>
-          <preprocessorList>
-            <Elem>_FILE_OFFSET_BITS=64</Elem>
-          </preprocessorList>
-        </ccTool>
-        <fortranCompilerTool>
-          <developmentMode>5</developmentMode>
-        </fortranCompilerTool>
-        <asmTool>
-          <developmentMode>5</developmentMode>
-        </asmTool>
-      </compileType>
-    </conf>
   </confs>
 </configurationDescriptor>
