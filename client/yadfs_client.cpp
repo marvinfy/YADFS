@@ -219,8 +219,41 @@ bool yadfs::YADFSClient::enqueueWrite(const char *path, const char *buf,
   }
   else // RAID_1
   {
-    //m_workers[0]->addJob(*job);
-    //m_workers[1]->addJob(*job);
+    // Calculates the id of the working thread (worker_id)
+    // int worker_id = chunk_id % m_nodeCount;
+
+    WriteJobData *data1, *data2;
+    
+    data1 = new WriteJobData();
+    data2 = new WriteJobData();
+
+    data1->m_chunk_id = chunk_id;
+    data2->m_chunk_id = chunk_id;
+
+    data1->m_file_id = entry->m_id;
+    data2->m_file_id = entry->m_id;
+
+    memcpy(data1->m_data, buf, size);
+    memcpy(data2->m_data, buf, size);
+
+    data1->m_size = size;
+    data2->m_size = size;
+
+    data1->m_node_client = m_node_clients[0];
+    data2->m_node_client = m_node_clients[1];
+
+    Job *job1 = new Job(write_func, data1);
+    Job *job2 = new Job(write_func, data2);
+
+    // Schedules the job to be done by the #worker_id worker thread
+    workers_it it = m_workers.find(path);
+    if (it == m_workers.end())
+    {
+      return false;
+    }
+
+    it->second->addJob(0, job1);
+    it->second->addJob(1, job2);
   }
 
   // Increments the size of this path by size

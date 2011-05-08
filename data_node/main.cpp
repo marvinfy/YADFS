@@ -8,6 +8,7 @@
 #include "node_server.hpp"
 #include "../commons/utils.hpp"
 #include "../commons/logging.hpp"
+#include "../commons/raid_mode.h"
 #include <stdlib.h>
 
 using yadfs::NodeServer;
@@ -36,19 +37,27 @@ int main(int argc, char* argv[])
   {
     port = new string("10100");
   }
+  string *mode = getParameter("datanode.raid.mode");
+  if (mode == NULL)
+  {
+    mode = new string("0");
+  }
 
   int nId = atoi(id->c_str());
   int nCount = atoi(count->c_str());
   int nPort = atoi(port->c_str());
+  Mode raidMode = (Mode) atoi(mode->c_str());
   int nRetries = 1000;
 
   Logging::log(Logging::INFO, "Data Node %d is about to start on port %d",
                nId, nPort);
   Logging::log(Logging::INFO, "Node count: %d", nCount);
+  Logging::log(Logging::INFO, "Raid mode: %d", raidMode);
+
 
 
   ServerConfig config(nPort, nRetries, yadfs::SINGLE_THREADED);
-  NodeServer server(config, nId, nCount);
+  NodeServer server(config, nId, nCount, raidMode);
   server.Start();
 
   delete id;

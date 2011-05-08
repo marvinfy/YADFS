@@ -14,8 +14,8 @@
 using std::string;
 
 yadfs::NodeServer::NodeServer(const ServerConfig& config, unsigned int id,
-                              unsigned int count) :
-Server(config), m_id(id), m_count(count)
+                              unsigned int count, Mode mode) :
+Server(config), m_id(id), m_count(count), m_mode(mode)
 {
   m_dir = opendir("data");
   assert(m_dir);
@@ -105,7 +105,16 @@ int yadfs::NodeServer::readChunk(unsigned int fileId, unsigned int chunkId,
     return 0;
   }
 
-  long int offset = chunkId / m_count * CHUNK_SIZE;
+  long int offset;
+  
+  if (m_mode == RAID_0)
+  {
+    offset = chunkId / m_count * CHUNK_SIZE;
+  }
+  else
+  {
+    offset = chunkId * CHUNK_SIZE;
+  }
   if (offset != ftell(fd))
   {
     fseek(fd, offset, SEEK_SET);
@@ -126,7 +135,16 @@ int yadfs::NodeServer::writeChunk(unsigned int fileId, unsigned int chunkId,
     return 0;
   }
 
-  long int offset = chunkId / m_count * CHUNK_SIZE;
+  long int offset;
+  if (m_mode == RAID_0)
+  {
+    offset = chunkId / m_count * CHUNK_SIZE;
+  }
+  else
+  {
+    offset = chunkId * CHUNK_SIZE;
+  }
+
   if (offset != ftell(fd))
   {
     fseek(fd, offset, SEEK_SET);

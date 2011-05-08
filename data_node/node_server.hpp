@@ -9,6 +9,7 @@
 #define	NODESERVER_HPP
 
 #include "../commons/server.hpp"
+#include "../commons/raid_mode.h"
 #include <stdlib.h>
 #include <dirent.h>
 #include <stdio.h>
@@ -33,10 +34,11 @@ class NodeServer : public Server
 private:
   unsigned int m_id;
   unsigned int m_count;
+  Mode m_mode;
   DIR *m_dir;
   fd_map m_fds;
 public:
-  NodeServer(const ServerConfig& config, unsigned int id, unsigned int count);
+  NodeServer(const ServerConfig& config, unsigned int id, unsigned int count, Mode mode);
   NodeServer(const NodeServer& orig);
   virtual ~NodeServer();
   FILE *getFD(unsigned int fileId, const char *mode);
