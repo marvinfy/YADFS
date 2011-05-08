@@ -66,22 +66,22 @@ dist/Release/GNU-Linux-x86/commons: ${OBJECTFILES}
 ${OBJECTDIR}/server.o: server.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/server.o server.cpp
+	$(COMPILE.cc) -O2 -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/server.o server.cpp
 
 ${OBJECTDIR}/client.o: client.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/client.o client.cpp
+	$(COMPILE.cc) -O2 -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/client.o client.cpp
 
 ${OBJECTDIR}/logging.o: logging.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/logging.o logging.cpp
+	$(COMPILE.cc) -O2 -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/logging.o logging.cpp
 
 ${OBJECTDIR}/utils.o: utils.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/utils.o utils.cpp
+	$(COMPILE.cc) -O2 -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/utils.o utils.cpp
 
 # Subprojects
 .build-subprojects:

@@ -51,11 +51,13 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=
+LDLIBSOPTIONS=../commons/dist/Debug/GNU-Linux-x86/libcommons.a -lpthread
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
 	"${MAKE}"  -f nbproject/Makefile-Release.mk dist/Release/GNU-Linux-x86/data_node
+
+dist/Release/GNU-Linux-x86/data_node: ../commons/dist/Debug/GNU-Linux-x86/libcommons.a
 
 dist/Release/GNU-Linux-x86/data_node: ${OBJECTFILES}
 	${MKDIR} -p dist/Release/GNU-Linux-x86
@@ -64,15 +66,16 @@ dist/Release/GNU-Linux-x86/data_node: ${OBJECTFILES}
 ${OBJECTDIR}/node_server.o: node_server.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/node_server.o node_server.cpp
+	$(COMPILE.cc) -O2 -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/node_server.o node_server.cpp
 
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/main.o main.cpp
+	$(COMPILE.cc) -O2 -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/main.o main.cpp
 
 # Subprojects
 .build-subprojects:
+	cd ../commons && ${MAKE}  -f Makefile CONF=Debug
 
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
@@ -81,6 +84,7 @@ ${OBJECTDIR}/main.o: main.cpp
 
 # Subprojects
 .clean-subprojects:
+	cd ../commons && ${MAKE}  -f Makefile CONF=Debug clean
 
 # Enable dependency checking
 .dep.inc: .depcheck-impl

@@ -54,11 +54,13 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=
+LDLIBSOPTIONS=-lfuse ../commons/dist/Debug/GNU-Linux-x86/libcommons.a -lpthread
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
 	"${MAKE}"  -f nbproject/Makefile-Release.mk dist/Release/GNU-Linux-x86/client
+
+dist/Release/GNU-Linux-x86/client: ../commons/dist/Debug/GNU-Linux-x86/libcommons.a
 
 dist/Release/GNU-Linux-x86/client: ${OBJECTFILES}
 	${MKDIR} -p dist/Release/GNU-Linux-x86
@@ -67,30 +69,31 @@ dist/Release/GNU-Linux-x86/client: ${OBJECTFILES}
 ${OBJECTDIR}/worker_pool.o: worker_pool.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/worker_pool.o worker_pool.cpp
+	$(COMPILE.cc) -O2 -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/worker_pool.o worker_pool.cpp
 
 ${OBJECTDIR}/job.o: job.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/job.o job.cpp
+	$(COMPILE.cc) -O2 -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/job.o job.cpp
 
 ${OBJECTDIR}/main.o: main.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/main.o main.c
+	$(COMPILE.c) -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/main.o main.c
 
 ${OBJECTDIR}/yadfs_client.o: yadfs_client.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/yadfs_client.o yadfs_client.cpp
+	$(COMPILE.cc) -O2 -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/yadfs_client.o yadfs_client.cpp
 
 ${OBJECTDIR}/worker.o: worker.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/worker.o worker.cpp
+	$(COMPILE.cc) -O2 -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/worker.o worker.cpp
 
 # Subprojects
 .build-subprojects:
+	cd ../commons && ${MAKE}  -f Makefile CONF=Debug
 
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
@@ -99,6 +102,7 @@ ${OBJECTDIR}/worker.o: worker.cpp
 
 # Subprojects
 .clean-subprojects:
+	cd ../commons && ${MAKE}  -f Makefile CONF=Debug clean
 
 # Enable dependency checking
 .dep.inc: .depcheck-impl

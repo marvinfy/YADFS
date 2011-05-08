@@ -75,6 +75,9 @@
         </cTool>
         <ccTool>
           <developmentMode>5</developmentMode>
+          <preprocessorList>
+            <Elem>_FILE_OFFSET_BITS=64</Elem>
+          </preprocessorList>
         </ccTool>
         <fortranCompilerTool>
           <developmentMode>5</developmentMode>

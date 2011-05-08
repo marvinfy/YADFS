@@ -53,11 +53,13 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=
+LDLIBSOPTIONS=-lpthread ../commons/dist/Debug/GNU-Linux-x86/libcommons.a
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
 	"${MAKE}"  -f nbproject/Makefile-Release.mk dist/Release/GNU-Linux-x86/master
+
+dist/Release/GNU-Linux-x86/master: ../commons/dist/Debug/GNU-Linux-x86/libcommons.a
 
 dist/Release/GNU-Linux-x86/master: ${OBJECTFILES}
 	${MKDIR} -p dist/Release/GNU-Linux-x86
@@ -66,25 +68,26 @@ dist/Release/GNU-Linux-x86/master: ${OBJECTFILES}
 ${OBJECTDIR}/master_server.o: master_server.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/master_server.o master_server.cpp
+	$(COMPILE.cc) -O2 -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/master_server.o master_server.cpp
 
 ${OBJECTDIR}/fs.o: fs.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/fs.o fs.cpp
+	$(COMPILE.cc) -O2 -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/fs.o fs.cpp
 
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/main.o main.cpp
+	$(COMPILE.cc) -O2 -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/main.o main.cpp
 
 ${OBJECTDIR}/fs_entry.o: fs_entry.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/fs_entry.o fs_entry.cpp
+	$(COMPILE.cc) -O2 -D_FILE_OFFSET_BITS=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/fs_entry.o fs_entry.cpp
 
 # Subprojects
 .build-subprojects:
+	cd ../commons && ${MAKE}  -f Makefile CONF=Debug
 
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
@@ -93,6 +96,7 @@ ${OBJECTDIR}/fs_entry.o: fs_entry.cpp
 
 # Subprojects
 .clean-subprojects:
+	cd ../commons && ${MAKE}  -f Makefile CONF=Debug clean
 
 # Enable dependency checking
 .dep.inc: .depcheck-impl
