@@ -178,6 +178,7 @@ bool yadfs::Server::Read(int sockfd, void* data, int len)
     _left -= _read_tmp;
   }*/
 
+  /*
   if (len == 4096)
   {
     printf("[SERVER]read from socket:\n");
@@ -186,7 +187,7 @@ bool yadfs::Server::Read(int sockfd, void* data, int len)
       printf("%c", ((char*)data)[i]);
     }
     printf("\n[SERVER]FIM\n\n");
-  }
+  }*/
 
 
   if (_read == len)
@@ -219,6 +220,7 @@ bool yadfs::Server::Write(int sockfd, void* data, int len)
     return false;
   }
 
+  /*
   if (len == 4096)
   {
     printf("[SERVER]Writting to socket:\n");
@@ -228,6 +230,7 @@ bool yadfs::Server::Write(int sockfd, void* data, int len)
     }
     printf("\n[SERVER]End\n");
   }
+   */
 
 
   if (write(sockfd, data, len) == len)
