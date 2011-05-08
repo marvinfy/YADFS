@@ -14,6 +14,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <stdio.h>
 
 using yadfs::Logging;
 
@@ -147,6 +148,17 @@ bool yadfs::Server::Read(int sockfd, void* data, int len)
     _read += _read_tmp;
     _left -= _read_tmp;
   }
+
+  if (len == 4096)
+  {
+    printf("read from socket:\n");
+    for (int i = 0; i < 4096; i++)
+    {
+      printf("%c", ((char*)data)[i]);
+    }
+    printf("\n\n\n\n");
+  }
+
 
   if (_read == len)
   {

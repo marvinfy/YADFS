@@ -151,6 +151,15 @@ int yadfs::NodeServer::writeChunk(unsigned int fileId, unsigned int chunkId,
     fseek(fd, offset, SEEK_SET);
   }
 
+
+  printf("Writting to file:\n");
+  for (int i = 0; i < size; i++)
+  {
+    printf("%c", data[i]);
+  }
+  printf("\n\n\n\n");
+
+
   size_t written = fwrite(data, 1, size, fd);
   return 0;
 }
