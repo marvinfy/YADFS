@@ -81,6 +81,7 @@ public:
                     off_t offset);
   bool releaseWrite(const char *path);
   bool releaseFiles(const char *path);
+  void sendTime(long time);
   FileSystemEntry *getEntry(const string& path);
   void removeEntry(const string& path);
 

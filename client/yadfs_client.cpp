@@ -361,6 +361,30 @@ bool yadfs::YADFSClient::releaseFiles(const char *path)
   return true;
 }
 
+void yadfs::YADFSClient::sendTime(long time)
+{
+  if (Connect() < 0)
+  {
+    return;
+  }
+
+  msg_req_handshake req_handshake;
+  req_handshake.m_msg_id = MSG_REQ_SENDTIME;
+  if (!Write(&req_handshake, sizeof (msg_req_handshake)))
+  {
+    return;
+  }
+
+  msg_req_sendtime req_sendtime;
+  req_sendtime.m_time = time;
+  if (!Write(&req_sendtime, sizeof (msg_req_sendtime)))
+  {
+    return;
+  }
+  Close();
+}
+
+
 yadfs::FileSystemEntry *yadfs::YADFSClient::getEntry(const string& path)
 {
   entries_it it = m_entries.find(path);
@@ -800,6 +824,8 @@ int yadfs_release_real(const char *path, struct fuse_file_info *fi)
 
   yadfs::Logging::log(Logging::INFO, "Operation took %ld ms", mtime);
   yadfs::Logging::log(Logging::INFO, "Operation took %ld sec %ld ms", seconds, useconds/1000.0);
+
+  client->sendTime(mtime);
 
   return 0;
 }
