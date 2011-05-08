@@ -137,14 +137,10 @@ bool yadfs::Server::Read(int sockfd, void* data, int len)
   }
 
 
-
-
   char *buf = (char *)data;
   int _read = 0;
   int _read_tmp;
   int _left = len;
-
-
   while (_read < len)
   {
     _read_tmp = read(sockfd, (void *)(&buf[_read]), _left);
@@ -189,7 +185,7 @@ bool yadfs::Server::Read(int sockfd, void* data, int len)
     {
       printf("%c", ((char*)data)[i]);
     }
-    printf("\n[SERVER]FIM\n\n\n");
+    printf("\n[SERVER]FIM\n\n");
   }
 
 
@@ -223,12 +219,23 @@ bool yadfs::Server::Write(int sockfd, void* data, int len)
     return false;
   }
 
+  if (len == 4096)
+  {
+    printf("[SERVER]Writting to socket:\n");
+    for (int i = 0; i < 4096; i++)
+    {
+      printf("%c", ((char*)data)[i]);
+    }
+    printf("\n[SERVER]End\n");
+  }
+
+
   if (write(sockfd, data, len) == len)
   {
     return true;
   }
 
-  Logging::log(Logging::ERROR, "Failed to send packet.");
+  Logging::log(Logging::ERROR, "[SERVER]Failed to send packet.");
   return false;
 }
 

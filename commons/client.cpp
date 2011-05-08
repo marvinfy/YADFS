@@ -85,15 +85,16 @@ bool yadfs::Client::Write(void *data, int len)
     {
       printf("%c", ((char*)data)[i]);
     }
-    printf("\n\n\n\n");
+    printf("\n[CLIENT]End\n");
   }
+
 
   if (write(m_sockfd, data, len) == len)
   {
     return true;
   }
 
-  Logging::log(Logging::ERROR, "Failed to send packet.");
+  Logging::log(Logging::ERROR, "[CLIENT]Failed to send packet.");
   return false;
 }
 
@@ -105,6 +106,28 @@ bool yadfs::Client::Read(void *data, int len)
     return false;
   }
 
+  char *buf = (char *)data;
+  int _read = 0;
+  int _read_tmp;
+  int _left = len;
+  while (_read < len)
+  {
+    _read_tmp = read(m_sockfd, (void *)(&buf[_read]), _left);
+
+    if (_read_tmp < 0)
+    {
+      break;
+    }
+
+    _read += _read_tmp;
+    if (_read_tmp == len)
+    {
+      break;
+    }
+    _left -= _read_tmp;
+  }
+
+  /*
   int _read_tmp, _read = 0, _left = len;
   while (_read < len)
   {
@@ -115,7 +138,7 @@ bool yadfs::Client::Read(void *data, int len)
     }
     _read += _read_tmp;
     _left -= _read_tmp;
-  }
+  }*/
 
   if (len == 4096)
   {
@@ -124,7 +147,7 @@ bool yadfs::Client::Read(void *data, int len)
     {
       printf("%c", ((char*)data)[i]);
     }
-    printf("\n\n\n\n");
+    printf("\n[CLIENT]FIM\n\n");
   }
 
 

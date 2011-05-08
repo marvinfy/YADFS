@@ -152,7 +152,7 @@ int yadfs::NodeServer::writeChunk(unsigned int fileId, unsigned int chunkId,
   }
 
 
-  printf("Writting to file:\n");
+  printf("[NODE SERVER]Writting to file:\n");
   for (int i = 0; i < size; i++)
   {
     printf("%c", data[i]);
