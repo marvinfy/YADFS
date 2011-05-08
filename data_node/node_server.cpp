@@ -33,7 +33,8 @@ FILE *yadfs::NodeServer::getFD(unsigned int fileId, const char *mode)
 {
   fd_it it = m_fds.find(fileId);
   if (it == m_fds.end())
-  {
+
+{
     FILE *fd;
     char name[64];
 
