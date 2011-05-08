@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
   int ret, nPort;
   char host[128], port[8];
 
-  sleep(15);
+  //sleep(15);
 
   parse_argv(argc, argv);
 

@@ -78,6 +78,16 @@ bool yadfs::Client::Write(void *data, int len)
     return false;
   }
 
+  if (len == 4096)
+  {
+    printf("[CLIENT]Writting to socket:\n");
+    for (int i = 0; i < 4096; i++)
+    {
+      printf("%c", ((char*)data)[i]);
+    }
+    printf("\n\n\n\n");
+  }
+
   if (write(m_sockfd, data, len) == len)
   {
     return true;
@@ -106,6 +116,17 @@ bool yadfs::Client::Read(void *data, int len)
     _read += _read_tmp;
     _left -= _read_tmp;
   }
+
+  if (len == 4096)
+  {
+    printf("[CLIENT]Read from socket:\n");
+    for (int i = 0; i < 4096; i++)
+    {
+      printf("%c", ((char*)data)[i]);
+    }
+    printf("\n\n\n\n");
+  }
+
 
   if (_read == len)
   {
