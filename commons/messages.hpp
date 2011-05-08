@@ -47,7 +47,8 @@ enum msgs
   MSG_REQ_READCHUNK,
   MSG_RES_READCHUNK,
   MSG_REQ_RELEASE,
-  MSG_RES_RELEASE
+  MSG_RES_RELEASE,
+  MSG_REQ_SENDTIME
 };
 
 typedef struct _msg_req_handshake
@@ -234,5 +235,10 @@ typedef struct _msg_res_release
 {
   boolean m_ok;
 } msg_res_release;
+
+typedef struct _msg_req_sendtime
+{
+  long m_time;
+} msg_req_sendtime;
 
 #endif	/* MESSAGES_HPP */
