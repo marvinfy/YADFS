@@ -137,26 +137,59 @@ bool yadfs::Server::Read(int sockfd, void* data, int len)
   }
 
 
-  int _read_tmp, _read = 0, _left = len;
+
+
+  char *buf = (char *)data;
+  int _read = 0;
+  int _read_tmp;
+  int _left = len;
+
+
   while (_read < len)
   {
-    _read_tmp = read(sockfd, data, _left);
+    _read_tmp = read(sockfd, (void *)(&buf[_read]), _left);
+
+    if (_read_tmp < 0)
+    {
+      break;
+    }
+
+    _read += _read_tmp;
+    if (_read_tmp == len)
+    {
+      break;
+    }
+    _left -= _read_tmp;
+  }
+
+  /*
+  while (_read < len)
+  {
+    //_read_tmp = read(sockfd, data, _left);
+
+    _read_tmp = recv(sockfd, data, len, 0);
+
+    if (_read_tmp != len)
+    {
+      printf("[SERVER]Opa! Len diferente do lido");
+    }
+
     if (_read_tmp < 0)
     {
       break;
     }
     _read += _read_tmp;
     _left -= _read_tmp;
-  }
+  }*/
 
   if (len == 4096)
   {
-    printf("read from socket:\n");
+    printf("[SERVER]read from socket:\n");
     for (int i = 0; i < 4096; i++)
     {
       printf("%c", ((char*)data)[i]);
     }
-    printf("\n\n\n\n");
+    printf("\n[SERVER]FIM\n\n\n");
   }
 
 
