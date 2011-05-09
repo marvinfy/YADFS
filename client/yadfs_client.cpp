@@ -382,6 +382,7 @@ void yadfs::YADFSClient::sendTime(long time)
     return;
   }
   Close();
+
 }
 
 
@@ -572,7 +573,8 @@ void read_func(void *data)
   if (gbl_waiting_for == dt->m_chunk_id)
   {
     gbl_waiting_for = -1;
-    pthread_cond_signal(&gbl_cond);
+    yadfs::Logging::log(Logging::INFO, "Broadcasting condition for chunk_id %d", dt->m_chunk_id);
+    pthread_cond_broadcast(&gbl_cond);
   }
   pthread_mutex_unlock(&gbl_mutex);
 

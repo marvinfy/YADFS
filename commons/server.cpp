@@ -138,23 +138,28 @@ bool yadfs::Server::Read(int sockfd, void* data, int len)
 
 
   char *buf = (char *)data;
-  int _read = 0;
   int _read_tmp;
+  int _read = 0;
   int _left = len;
   while (_read < len)
   {
     _read_tmp = read(sockfd, (void *)(&buf[_read]), _left);
 
+    // Error
     if (_read_tmp < 0)
     {
       break;
     }
 
     _read += _read_tmp;
-    if (_read_tmp == len)
+
+    // Every byte was read
+    if (_read == len)
     {
       break;
     }
+
+    // Remaining bytes to read
     _left -= _read_tmp;
   }
 

@@ -396,16 +396,18 @@ void *yadfs::MasterServer::Receive(int sockfd)
     {
       goto cleanup;
     }
-
+    break;
   }
   case MSG_REQ_SENDTIME:
   {
     msg_req_sendtime req_sendtime;
-    if (!Read(sockfd, &req_sendtime, sizeof (req_sendtime)))
+    if (!Read(sockfd, &req_sendtime, sizeof (msg_req_sendtime)))
     {
       goto cleanup;
     }
+
     yadfs::Logging::log(Logging::INFO, "Operation took %ld ms", req_sendtime.m_time);
+    break;
   }
 
   }
