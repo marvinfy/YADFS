@@ -47,6 +47,9 @@ void *yadfs::MasterServer::Receive(int sockfd)
     goto cleanup;
   }
 
+
+  yadfs::Logging::log(Logging::INFO, "[SERVER]Processing message %d", msg_hs.m_msg_id);
+
   switch (msg_hs.m_msg_id)
   {
   case MSG_REQ_ECHO:
@@ -409,6 +412,10 @@ void *yadfs::MasterServer::Receive(int sockfd)
     yadfs::Logging::log(Logging::INFO, "Operation took %ld ms", req_sendtime.m_time);
     break;
   }
+      default:
+      {
+        yadfs::Logging::log(Logging::ERROR, "Unsupported message %d", msg_hs.m_msg_id);
+      }
 
   }
 

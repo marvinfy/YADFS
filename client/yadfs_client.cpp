@@ -107,6 +107,7 @@ bool yadfs::YADFSClient::init()
 int yadfs::YADFSClient::read(const char *path, char *buf, size_t size,
                              off_t offset)
 {
+
   FileSystemEntry *entry = getEntry(path);
 
   if (offset == 0)
@@ -130,7 +131,8 @@ int yadfs::YADFSClient::read(const char *path, char *buf, size_t size,
     memset(entry->m_data, 0,
            entry->m_chunk_count * (sizeof (msg_res_readchunk *)));
 
-    for (int i = 0; i < entry->m_chunk_count; i++)
+    int i;
+    for (i = 0; i < entry->m_chunk_count; i++)
     {
       // Calculates the id of the working thread (worker_id)
       int worker_id = i % m_nodeCount;
@@ -146,7 +148,9 @@ int yadfs::YADFSClient::read(const char *path, char *buf, size_t size,
 
       // Schedules the job to be done by the #worker_id worker thread
       pair.second->addJob(worker_id, job);
+      
     }
+    assert(entry->m_chunk_count == i);
   }
 
   int chunk_id = offset / CHUNK_SIZE;
@@ -154,6 +158,15 @@ int yadfs::YADFSClient::read(const char *path, char *buf, size_t size,
   {
     return 0;
   }
+  // Logging::log(Logging::INFO, "[YADFSClient::read]offset %d", offset);
+  // Logging::log(Logging::INFO, "[YADFSClient::read]chunk_id %d", chunk_id);
+
+  /*
+  int chunk_id = offset / CHUNK_SIZE;
+  if (chunk_id >= entry->m_chunk_count)
+  {
+    return 0;
+  }*/
 
   pthread_mutex_lock(&gbl_mutex);
   if (entry->m_data[chunk_id] == NULL)
@@ -489,10 +502,28 @@ void write_func(void *data)
 {
   WriteJobData *dt = (WriteJobData *) data;
 
-  if (!dt->m_node_client->Connect())
+  int tries = 0;
+  while (42)
   {
-    return;
-  }
+      if (dt->m_node_client->Connect() >= 0)
+      {
+          break;
+      }
+
+      dt->m_node_client->Close();
+      //sleep(1);
+      tries++;
+
+      if (tries >= 100)
+      {
+          yadfs::Logging::log(Logging::INFO, "[CLIENT][write_func]Voa passarinho.. se fodeu");
+          throw;
+      }
+      yadfs::Logging::log(Logging::INFO, "[CLIENT][write_func]Trying to reconnect #%d", tries);
+    }
+
+
+
 
   msg_req_handshake req_handshake;
   req_handshake.m_msg_id = MSG_REQ_ADDCHUNK;
@@ -535,10 +566,27 @@ void read_func(void *data)
 {
   ReadJobData *dt = (ReadJobData *) data;
 
-  if (dt->m_node_client->Connect() < 0)
+  // yadfs::Logging::log(Logging::INFO, "[read_func]Processando chunkid: %d", dt->m_chunk_id);
+
+  int tries = 0;
+  while (42)
   {
-    return;
-  }
+      if (dt->m_node_client->Connect() >= 0)
+      {
+          break;
+      }
+
+      dt->m_node_client->Close();
+      //sleep(1);
+      tries++;
+
+      if (tries >= 100)
+      {
+          yadfs::Logging::log(Logging::INFO, "[CLIENT][read_func]Voa passarinho.. se fodeu");
+          throw;
+      }
+      yadfs::Logging::log(Logging::INFO, "[CLIENT][read_func]Trying to reconnect #%d", tries);
+    }
 
   msg_req_handshake req_handshake;
   req_handshake.m_msg_id = MSG_REQ_READCHUNK;
@@ -564,7 +612,6 @@ void read_func(void *data)
   {
     return;
   }
-
 
   yadfs::FileSystemEntry *entry = dt->m_entry;
 

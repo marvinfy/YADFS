@@ -60,12 +60,40 @@ int yadfs::Client::Connect()
         server->h_length);
   srv_addr.sin_port = htons(m_config.m_port);
 
-  if (connect(m_sockfd, (sockaddr *) & srv_addr, sizeof (srv_addr)) < 0)
+  /*
+  unsigned int tries = 0;
+  int status = -1;
+  while (42)
   {
-    Logging::log(Logging::ERROR, "Could not connect.");
+    status = connect(m_sockfd, (sockaddr *) & srv_addr, sizeof (srv_addr));
+    if (status != 0)
+    {
+        tries++;
+        Logging::log(Logging::ERROR, "[CLIENT]Could not connect. Server %s. #%d try", m_config.m_host.c_str(), tries);
+        sleep(1);
+
+        if (tries >= 100)
+        {
+            Logging::log(Logging::ERROR, "Fatal: could not connect after 100 tries");
+            close(m_sockfd);
+            return -1;
+        }
+    }
+    else
+    {
+        break;
+    }
+  }
+   */
+
+  int status = connect(m_sockfd, (sockaddr *) & srv_addr, sizeof (srv_addr));
+  if (status != 0)
+  {
+    Logging::log(Logging::ERROR, "Fatal: could not connect to %s", m_config.m_host.c_str());
     close(m_sockfd);
     return -1;
   }
+
 
   return m_sockfd;
 }
