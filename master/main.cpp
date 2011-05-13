@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
   }
 
   // Starting server..
-  Logging::log(Logging::INFO, "Master is about to start on port %d", nPort);
+  Logging::log(Logging::INFO, "Master is about to start on port %d - Mode %d", nPort, (int)mode);
   ServerConfig config(nPort, nRetries, yadfs::MULTI_THREADED);
   MasterServer server(config);
   server.setMode(mode);
